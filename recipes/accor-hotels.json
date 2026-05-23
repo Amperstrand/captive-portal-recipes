@@ -1,0 +1,21 @@
+{
+  "id": "accor-hotels",
+  "name": "Accor Hotels (m3connect)",
+  "travelmate_domain": "welcome.m3connect.net",
+  "fallback_domains": [],
+  "auth_type": "multi-step-form",
+  "credentials": "none",
+  "params": {
+    "success_check": "contains_string",
+    "success_string": "online",
+    "step1_url": "${trm_captiveurl}",
+    "step1_name": "fetch landing page",
+    "step1_extra_fields": "",
+    "step2_url": "https://welcome.m3connect.net/en/step2",
+    "step2_name": "submit room info",
+    "step2_extra_fields": "room=101&adults=1",
+    "step3_url": "https://welcome.m3connect.net/en/step3",
+    "step3_name": "accept terms and connect",
+    "step3_extra_fields": "terms=1&connect=1"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "arista-clickthrough",
+  "name": "Arista Click-Through Portal",
+  "travelmate_domain": "agni.arista.io",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}/portal/${orgId}/clickThrough/logon",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/portal/{orgId}/clickThrough/logon",
+    "success_check": "empty_body"
+  }
+}

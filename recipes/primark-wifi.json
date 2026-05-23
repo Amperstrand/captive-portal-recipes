@@ -1,0 +1,17 @@
+{
+  "id": "primark-wifi",
+  "name": "Primark Public WiFi",
+  "travelmate_domain": "portal.wifi.primark.net",
+  "fallback_domains": ["www.primark.com"],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://portal.wifi.primark.net/auth/index.html/u",
+    "extra_fields": "cmd=authenticate&email=Customer@wifi.primark.net",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/auth/index.html/u",
+    "success_check": "empty_body"
+  }
+}

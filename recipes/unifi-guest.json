@@ -1,0 +1,18 @@
+{
+  "id": "unifi-guest",
+  "name": "UniFi Guest Portal",
+  "travelmate_domain": "${trm_captiveurl}",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}/guest/s/${site}/login",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/guest/s/default/login",
+    "success_check": "contains_string",
+    "success_string": "authorized"
+  }
+}

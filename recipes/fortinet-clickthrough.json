@@ -1,0 +1,18 @@
+{
+  "id": "fortinet-clickthrough",
+  "name": "Fortinet/FortiAuthenticator Click-Through",
+  "travelmate_domain": "captiveportal.fortinet.com",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}/fgtauth",
+    "username_field": "username",
+    "password_field": "password",
+    "form_action_default": "/fgtauth",
+    "extra_fields": "answer=1&agree=1",
+    "success_check": "contains_string",
+    "success_string": "keepalive"
+  }
+}

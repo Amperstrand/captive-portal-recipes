@@ -1,0 +1,17 @@
+{
+  "id": "picopoint-shell",
+  "name": "Picopoint Gatekeeper (Shell Free WiFi)",
+  "travelmate_domain": "gatekeeper2.picopoint.com",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/",
+    "success_check": "empty_body"
+  }
+}

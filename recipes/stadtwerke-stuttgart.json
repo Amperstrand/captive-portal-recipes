@@ -1,0 +1,17 @@
+{
+  "id": "stadtwerke-stuttgart",
+  "name": "Stadtwerke Stuttgart Solarbank WLAN",
+  "travelmate_domain": "${trm_captiveurl}",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${uamip}:${uamport}/logon",
+    "extra_fields": "username=&password=&agreetos=1",
+    "username_field": "username",
+    "password_field": "password",
+    "form_action_default": "/logon",
+    "success_check": "empty_body"
+  }
+}

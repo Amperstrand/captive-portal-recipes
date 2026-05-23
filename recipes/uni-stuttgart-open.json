@@ -1,0 +1,17 @@
+{
+  "id": "uni-stuttgart-open",
+  "name": "Uni Stuttgart Open WiFi",
+  "travelmate_domain": "guest-internet.tik.uni-stuttgart.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}/login",
+    "extra_fields": "accept=1",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/login",
+    "success_check": "empty_body"
+  }
+}

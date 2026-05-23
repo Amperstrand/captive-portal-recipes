@@ -1,0 +1,18 @@
+{
+  "id": "mypowerspot-de",
+  "name": "MyPowerspot (DE)",
+  "travelmate_domain": "login.mypowerspot.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "https://${trm_domain}/landingpage/",
+    "submit_url": "https://${trm_domain}/landingpage/",
+    "extra_fields": "acceptTOC=1",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/landingpage/",
+    "success_check": "contains_string",
+    "success_string": "success"
+  }
+}

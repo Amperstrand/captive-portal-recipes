@@ -1,0 +1,17 @@
+{
+  "id": "ruby-hotels",
+  "name": "Ruby Hotels Guest WiFi",
+  "travelmate_domain": "hotspot.ruby-hotels.com",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "http://${trm_domain}/login?dst=",
+    "submit_url": "http://${trm_domain}/login",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/login",
+    "success_check": "empty_body"
+  }
+}

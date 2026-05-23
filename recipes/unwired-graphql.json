@@ -1,0 +1,25 @@
+{
+  "id": "unwired-graphql",
+  "name": "Unwired WiFi (AT Transit)",
+  "travelmate_domain": "wasabi-splashpage.wifi.unwired.at",
+  "fallback_domains": ["wasabi.hotspot-local.unwired.at"],
+  "auth_type": "json-api",
+  "credentials": "none",
+  "params": {
+    "success_check": "empty_body",
+    "step1_name": "GraphQL splashpage query",
+    "step1_type": "json",
+    "step1_url": "https://${trm_domain}/api/graphql",
+    "step1_method": "POST",
+    "step1_data": "{\"operationName\":\"splashpage\",\"variables\":{\"user_session_id\":\"${user_session_id}\",\"initial\":true,\"language\":\"de\"}}",
+    "step1_extract": "widget_id:@.data.splashpage.splashpage.pages[0].widgets[?(@.__typename==\"ConnectWidget\")].widget_id",
+    "step1_required": "widget_id",
+    "step2_name": "GraphQL client_connect mutation",
+    "step2_type": "json",
+    "step2_url": "https://${trm_domain}/api/graphql",
+    "step2_method": "POST",
+    "step2_data": "{\"operationName\":\"client_connect\",\"variables\":{\"userSessionId\":\"${user_session_id}\",\"widget_id\":\"${widget_id}\",\"userAgentLang\":\"de\",\"userAgentCountry\":\"de\"}}",
+    "step2_extract": "",
+    "step2_required": ""
+  }
+}

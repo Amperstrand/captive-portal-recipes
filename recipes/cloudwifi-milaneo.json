@@ -1,0 +1,17 @@
+{
+  "id": "cloudwifi-milaneo",
+  "name": "CloudWiFi (Milaneo Stuttgart)",
+  "travelmate_domain": "start.cloudwifi.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}",
+    "extra_fields": "FX_loginType=Easy+Login",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/",
+    "success_check": "empty_body"
+  }
+}

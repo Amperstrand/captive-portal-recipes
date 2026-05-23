@@ -1,0 +1,17 @@
+{
+  "id": "cisco-ise-cwa",
+  "name": "Cisco ISE CWA Guest Portal",
+  "travelmate_domain": "${trm_captiveurl}",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}/portal/gateway",
+    "extra_fields": "aupAccepted=true",
+    "username_field": "token",
+    "password_field": "",
+    "form_action_default": "/AupSubmit.action",
+    "success_check": "empty_body"
+  }
+}

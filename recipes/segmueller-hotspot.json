@@ -1,0 +1,17 @@
+{
+  "id": "segmueller-hotspot",
+  "name": "Segmüller Hotspot (Aruba)",
+  "travelmate_domain": "hotspot.segmueller.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://captiveportal-login.segmueller.de/cgi-bin/login",
+    "extra_fields": "cmd=authenticate&user=SEG_Anonymous&password=069424",
+    "username_field": "user",
+    "password_field": "password",
+    "form_action_default": "/cgi-bin/login",
+    "success_check": "empty_body"
+  }
+}

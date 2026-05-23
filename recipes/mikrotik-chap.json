@@ -1,0 +1,17 @@
+{
+  "id": "mikrotik-chap",
+  "name": "MikroTik Hotspot CHAP",
+  "travelmate_domain": "hotspot.local",
+  "fallback_domains": [],
+  "auth_type": "chap-md5",
+  "credentials": "username_password",
+  "params": {
+    "chap_detect": "hexMD5",
+    "form_action": "http://${trm_domain}/login",
+    "username_field": "username",
+    "response_field": "response",
+    "dst_field": "dst",
+    "dst_default": "http://www.google.com",
+    "success_check": "empty_body"
+  }
+}

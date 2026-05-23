@@ -1,0 +1,17 @@
+{
+  "id": "lancom-cloud",
+  "name": "LANCOM Cloud Service Hotspot",
+  "travelmate_domain": "hotspot.lmc.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}/cloud-service-hotspot",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/cloud-service-hotspot",
+    "success_check": "empty_body"
+  }
+}

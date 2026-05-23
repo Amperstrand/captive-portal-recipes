@@ -1,0 +1,18 @@
+{
+  "id": "dokom21-hotspot",
+  "name": "Dokom21 Hotspot (DSW21/Westfalenhallen)",
+  "travelmate_domain": "hotspot.dokom21.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "https://${trm_domain}/${networkType}/Login",
+    "submit_url": "https://${trm_domain}/${networkType}/Login",
+    "extra_fields": "ctl00$GenericContent$AgbAccepted=on&ctl00$GenericContent$PrivacyPolicyAccepted=on&ctl00$LanguageSelect=DE&ctl00$GenericContent$SubmitLogin=Einloggen",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/Login",
+    "success_check": "contains_string",
+    "success_string": "Login erfolgreich."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "vodafone-de",
+  "name": "Vodafone Hotspot (DE)",
+  "travelmate_domain": "hotspot.vodafone.de",
+  "fallback_domains": [],
+  "auth_type": "json-api",
+  "credentials": "username_password",
+  "params": {
+    "success_check": "json_true",
+    "step1_name": "get redirect and extract sid",
+    "step1_type": "redirect",
+    "step1_url": "${trm_captiveurl}",
+    "step1_method": "GET",
+    "step1_extract": "sid:BEGIN{FS=\"[=&]\"}{print $2}",
+    "step1_required": "sid",
+    "step2_name": "get session from API",
+    "step2_url": "https://${trm_domain}/api/v4/session?sid=${sid}",
+    "step2_method": "GET",
+    "step2_referer": "http://${trm_domain}/portal/?sid=${sid}",
+    "step2_extract": "session:@.session,ids_raw:@.loginProfiles[*].id",
+    "step2_required": "session",
+    "step3_name": "final login request",
+    "step3_url": "https://${trm_domain}/api/v4/login?sid=${sid}",
+    "step3_method": "POST",
+    "step3_referer": "http://${trm_domain}/portal/?sid=${sid}",
+    "step3_data": "loginProfile=4&accessType=csc-community&accountType=csc&password=${password}&session=${session}&username=${username}",
+    "step3_extract": "",
+    "step3_required": ""
+  }
+}

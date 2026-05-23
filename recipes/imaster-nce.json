@@ -1,0 +1,18 @@
+{
+  "id": "imaster-nce",
+  "name": "iMaster NCE Guest Portal",
+  "travelmate_domain": "device.imaster-nce.de",
+  "fallback_domains": [],
+  "auth_type": "json-api",
+  "credentials": "none",
+  "params": {
+    "success_check": "json_true",
+    "step1_name": "anonymous login form POST",
+    "step1_type": "form",
+    "step1_url": "https://${trm_domain}:19008/portalauth/login",
+    "step1_method": "POST",
+    "step1_data": "agreed=1&userName=~anonymous&userPass=~anonymous&ssid=${ssid}&umac=${umac}&apmac=${apmac}&uaddress=${uaddress}&authType=2",
+    "step1_extract": "success:@.success",
+    "step1_required": "success"
+  }
+}

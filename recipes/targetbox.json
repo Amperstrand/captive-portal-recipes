@@ -1,0 +1,18 @@
+{
+  "id": "targetbox",
+  "name": "TargetBox WiFi (Zalando)",
+  "travelmate_domain": "wifi.targetbox.de",
+  "fallback_domains": [],
+  "auth_type": "json-api",
+  "credentials": "none",
+  "params": {
+    "success_check": "json_true",
+    "step1_name": "skip/auth via wifidog",
+    "step1_type": "json",
+    "step1_url": "https://${trm_domain}/wifidog/skip",
+    "step1_method": "POST",
+    "step1_data": "{\"gwAddress\":\"${gw_address}\",\"gwPort\":\"${gw_port}\",\"gwId\":\"${gw_id}\",\"mac\":\"${mac}\"}",
+    "step1_extract": "success:@.success,redirectUrl:@.redirectUrl",
+    "step1_required": "success"
+  }
+}

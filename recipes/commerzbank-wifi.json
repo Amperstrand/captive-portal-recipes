@@ -1,0 +1,29 @@
+{
+  "id": "commerzbank-wifi",
+  "name": "Commerzbank WiFi",
+  "travelmate_domain": "wifiaccess.co",
+  "fallback_domains": [],
+  "auth_type": "json-api",
+  "credentials": "none",
+  "params": {
+    "success_check": "empty_body",
+    "step1_name": "init session",
+    "step1_url": "https://${trm_domain}/portal_api.php",
+    "step1_method": "POST",
+    "step1_data": "action=init",
+    "step1_extract": "",
+    "step1_required": "",
+    "step2_name": "subscribe for free access",
+    "step2_url": "https://${trm_domain}/portal_api.php",
+    "step2_method": "POST",
+    "step2_data": "action=subscribe&type=one&policy_accept=true",
+    "step2_extract": "login:@.info.subscribe.login,password:@.info.subscribe.password",
+    "step2_required": "login",
+    "step3_name": "authenticate with credentials",
+    "step3_url": "https://${trm_domain}/portal_api.php",
+    "step3_method": "POST",
+    "step3_data": "action=authenticate&login=${login}&password=${password}&policy_accept=true",
+    "step3_extract": "",
+    "step3_required": ""
+  }
+}

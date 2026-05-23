@@ -1,0 +1,17 @@
+{
+  "id": "cisco-meraki",
+  "name": "Cisco Meraki Click-Through",
+  "travelmate_domain": "eu.network-auth.com",
+  "fallback_domains": ["my.meraki.net"],
+  "auth_type": "click-through-grant",
+  "credentials": "none",
+  "params": {
+    "grant_url_source": "redirect_url",
+    "grant_url_extract": "query_param",
+    "grant_url_param": "base_grant_url",
+    "continue_url": "http://google.com/",
+    "duration": 86400,
+    "grant_method": "GET",
+    "success_check": "empty_body"
+  }
+}

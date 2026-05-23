@@ -1,0 +1,17 @@
+{
+  "id": "ruby-workspaces",
+  "name": "Ruby Workspaces CHAP WiFi",
+  "travelmate_domain": "hotspot.ruby-workspaces.com",
+  "fallback_domains": [],
+  "auth_type": "chap-md5",
+  "credentials": "none",
+  "params": {
+    "chap_detect": "hexMD5",
+    "form_action": "http://${trm_domain}/login",
+    "username_field": "username",
+    "response_field": "password",
+    "dst_field": "dst",
+    "dst_default": "",
+    "success_check": "empty_body"
+  }
+}

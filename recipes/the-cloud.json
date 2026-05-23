@@ -1,0 +1,17 @@
+{
+  "id": "the-cloud",
+  "name": "The Cloud (EU Hotspots)",
+  "travelmate_domain": "service.thecloud.eu",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "https://${trm_domain}/getonline",
+    "submit_url": "https://${trm_domain}/macauthlogin/v2/registration",
+    "extra_fields": "terms=true",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/macauthlogin/v2/registration",
+    "success_check": "empty_body"
+  }
+}

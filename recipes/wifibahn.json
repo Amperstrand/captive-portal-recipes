@@ -1,0 +1,17 @@
+{
+  "id": "wifibahn",
+  "name": "DB Wifi/ICE Hotspots (DE)",
+  "travelmate_domain": "wifi.bahn.de",
+  "fallback_domains": ["login.wifionice.de"],
+  "auth_type": "csrf-form-submit",
+  "credentials": "none",
+  "params": {
+    "csrf_source": "cookie",
+    "csrf_page_url": "https://${trm_domain}/en/",
+    "csrf_cookie_name": "csrf",
+    "csrf_field_name": "CSRFToken",
+    "csrf_submit_url": "https://${trm_domain}/en/",
+    "extra_fields": "login=true",
+    "success_check": "empty_body"
+  }
+}

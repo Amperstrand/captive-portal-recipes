@@ -1,0 +1,17 @@
+{
+  "id": "cisco-wireless-mobility",
+  "name": "Cisco Wireless Mobility (Media/Saturn)",
+  "travelmate_domain": "${trm_captiveurl}",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "${switch_url}",
+    "extra_fields": "del[]=on&redirect_url=${redirect}&err_flag=0&buttonClicked=4",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/fs/customwebauth/login.html",
+    "success_check": "empty_body"
+  }
+}

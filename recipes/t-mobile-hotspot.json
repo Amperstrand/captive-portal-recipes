@@ -1,0 +1,18 @@
+{
+  "id": "t-mobile-hotspot",
+  "name": "Telekom/T-Mobile Hotspot (DE)",
+  "travelmate_domain": "hotspot.t-mobile.net",
+  "fallback_domains": [],
+  "auth_type": "json-api",
+  "credentials": "none",
+  "params": {
+    "success_check": "json_true",
+    "step1_name": "free login via JSON API",
+    "step1_type": "json",
+    "step1_url": "https://${trm_domain}/wlan/rest/freeLogin",
+    "step1_method": "POST",
+    "step1_data": "{\"rememberMe\":false}",
+    "step1_extract": "wlanLoginStatus:@.user.wlanLoginStatus",
+    "step1_required": "wlanLoginStatus"
+  }
+}

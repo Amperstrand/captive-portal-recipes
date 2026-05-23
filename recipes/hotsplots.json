@@ -1,0 +1,17 @@
+{
+  "id": "hotsplots",
+  "name": "Hotsplots WiFi (DE Transit/Bogestra)",
+  "travelmate_domain": "www.hotsplots.de",
+  "fallback_domains": ["auth.hotsplots.de"],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}/auth/login.php",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/auth/login.php",
+    "success_check": "empty_body"
+  }
+}

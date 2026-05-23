@@ -1,0 +1,17 @@
+{
+  "id": "fritzbox-guest",
+  "name": "FRITZ!Box Guest Access",
+  "travelmate_domain": "${trm_captiveurl}",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}/trustme.lua?accept=",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/trustme.lua?accept=",
+    "success_check": "empty_body"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "maxx-arena",
+  "name": "MaxxArena / MesseSpot",
+  "travelmate_domain": "hotspot.maxxarena.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}/",
+    "extra_fields": "auth=free",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/",
+    "success_check": "empty_body"
+  }
+}

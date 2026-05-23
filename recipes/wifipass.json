@@ -1,0 +1,17 @@
+{
+  "id": "wifipass",
+  "name": "WiFiPass.org Portal",
+  "travelmate_domain": "wifipass.org",
+  "fallback_domains": [],
+  "auth_type": "cookie-chain",
+  "credentials": "none",
+  "params": {
+    "init_url": "https://wifipass.org/login",
+    "cookie_extract_pattern": "/PHPSESSID/{print $NF}",
+    "submit_url": "https://wifipass.org/submit",
+    "post_data": "session=${session_token}&accept=1",
+    "extra_headers": "",
+    "success_check": "contains_string",
+    "success_string": "success"
+  }
+}

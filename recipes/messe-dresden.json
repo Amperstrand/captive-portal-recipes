@@ -1,0 +1,17 @@
+{
+  "id": "messe-dresden",
+  "name": "Messe Dresden WiFi",
+  "travelmate_domain": "aerolan.ibh.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}/messe/login.html",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/messe/login.html",
+    "success_check": "empty_body"
+  }
+}

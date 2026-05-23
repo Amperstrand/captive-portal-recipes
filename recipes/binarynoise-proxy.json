@@ -1,0 +1,17 @@
+{
+  "id": "binarynoise-proxy",
+  "name": "Binarynoise Portal Proxy",
+  "travelmate_domain": "portal.binarynoise.de",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}:8001/login",
+    "extra_fields": "",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/login",
+    "success_check": "empty_body"
+  }
+}

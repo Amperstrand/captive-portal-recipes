@@ -1,0 +1,17 @@
+{
+  "id": "rhein-ruhr",
+  "name": "S-Bahn Rhein-Ruhr Hotspot",
+  "travelmate_domain": "10.10.10.1",
+  "fallback_domains": [],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "http://${trm_domain}:2050/splash.html",
+    "submit_url": "http://${trm_domain}:2050/nodogsplash_auth/",
+    "extra_fields": "tok=${tok}&redir=${redir}",
+    "username_field": "",
+    "password_field": "",
+    "form_action_default": "/nodogsplash_auth/",
+    "success_check": "empty_body"
+  }
+}

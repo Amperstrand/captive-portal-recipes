@@ -1,0 +1,18 @@
+{
+  "id": "mist-portal",
+  "name": "Juniper Mist Portal (Rossmann)",
+  "travelmate_domain": "portal.gc1.mist.com",
+  "fallback_domains": ["portal.mist.com"],
+  "auth_type": "form-submit",
+  "credentials": "none",
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "https://${trm_domain}/logon",
+    "extra_fields": "auth_method=passphrase&tos=true",
+    "username_field": "ap_mac",
+    "password_field": "client_mac",
+    "form_action_default": "/logon",
+    "success_check": "contains_string",
+    "success_string": "success"
+  }
+}
