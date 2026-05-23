@@ -1,8 +1,18 @@
-name: Test Recipe Compiler
+name: Build and Deploy
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -80,13 +90,7 @@ jobs:
 
       - name: Run mock test suite
         run: |
-          # Ensure mock binaries are executable
           chmod +x tests/mock-bin/*
-
-          # On Ubuntu /bin/sh is dash; use bash for test runner since
-          # some compiled scripts use bash-specific ${var:pos:len}
-          # in urlencode() (only triggered with actual credentials,
-          # but bash ensures full compatibility).
           bash tests/test-recipes.sh /tmp/recipe-compile-test
 
       # ── Summary ────────────────────────────────────────────────
@@ -96,7 +100,7 @@ jobs:
         run: |
           recipes=$(ls recipes/*.json 2>/dev/null | wc -l | tr -d ' ')
           compiled=$(ls /tmp/recipe-compile-test/*.login 2>/dev/null | wc -l | tr -d ' ')
-           templates=$(ls templates/targets/travelmate/*.sh.template 2>/dev/null | wc -l | tr -d ' ')
+          templates=$(ls templates/targets/travelmate/*.sh.template 2>/dev/null | wc -l | tr -d ' ')
 
           {
             echo "## Recipe Compiler Test Results"
@@ -115,3 +119,44 @@ jobs:
             echo "- Compiled script syntax (sh -n)"
             echo "- Mock test suite (all 44 recipes)"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Upload compiled scripts as artifact ────────────────────
+
+      - name: Upload compiled scripts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-login-scripts
+          path: /tmp/recipe-compile-test/*.login
+          retention-days: 30
+
+  pages:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile recipes and generate pages
+        run: |
+          chmod +x compiler/compile-recipe.sh tools/generate-pages.sh
+          sh tools/generate-pages.sh \
+            --compile-dir _site/output \
+            --output-dir _site \
+            --recipes-dir recipes \
+            --compiler compiler/compile-recipe.sh
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
