@@ -257,8 +257,10 @@ printf '%s\n' "${RECIPES_DATA}" | while IFS='|' read -r _id _name _auth _domain 
 	_mod=$((_row_num % 2))
 	if [ "${_mod}" = "1" ]; then _cls="row-odd"; fi
 
-	printf '      <tr class="%s"><td><a href="%s/%s.login" class="recipe-link" download>%s</a></td><td><code>%s</code></td><td><code class="domain">%s</code></td><td>%s</td><td>%s</td></tr>\n' \
-		"${_cls}" "${_LINK_PREFIX}" "${_id}" "${_esc_name_html}" "${_esc_auth_html}" "${_esc_domain_html}" "${_cred_display}" "${_badge}"
+	_js_arg="togglePreview(event,&quot;${_id}&quot;)"
+	printf '      <tr class="%s"><td><a href="%s/%s.login" class="recipe-link" download>%s</a></td><td><code>%s</code></td><td><code class="domain">%s</code></td><td>%s</td><td>%s</td><td><a href="%s/%s.login" class="action-link" download>download</a>&#160;<a href="#" class="action-link" onclick="%s">preview</a></td></tr>\n' \
+		"${_cls}" "${_LINK_PREFIX}" "${_id}" "${_esc_name_html}" "${_esc_auth_html}" "${_esc_domain_html}" "${_cred_display}" "${_badge}" "${_LINK_PREFIX}" "${_id}" "${_js_arg}"
+	printf '      <tr class="preview-row" id="preview-%s"><td colspan="6"><pre><code></code></pre></td></tr>\n' "${_id}"
 done > "${PROJECT_DIR}/.pages-table-rows.$$"
 
 # Generate the full HTML page
@@ -325,6 +327,15 @@ code{font-family:var(--mono);font-size:.8rem;background:rgba(110,118,129,.15);pa
 
 .cred-none{color:var(--text-muted);font-size:.8rem}
 
+.action-link{font-size:.75rem;padding:.15em .4em;border-radius:4px;background:rgba(110,118,129,.15);color:var(--text-muted);white-space:nowrap}
+.action-link:hover{color:var(--accent);text-decoration:none;background:rgba(110,118,129,.25)}
+
+.preview-row{display:none;background:var(--surface)}
+.preview-row.open{display:table-row}
+.preview-row td{padding:0}
+.preview-row pre{margin:0;padding:.75rem 1rem;overflow-x:auto;max-height:400px;overflow-y:auto}
+.preview-row code{font-family:var(--mono);font-size:.75rem;line-height:1.5;color:var(--text);background:none;padding:0;white-space:pre}
+
 /* Footer */
 footer{text-align:center;padding:1.5rem 0;border-top:1px solid var(--border);color:var(--text-muted);font-size:.8rem;line-height:1.8}
 footer a{color:var(--text-muted)}
@@ -363,7 +374,7 @@ cat >> "${HTML_FILE}" << 'HTMLEOF2'
 <div class="table-wrap">
 <table>
 <thead>
-<tr><th>Name</th><th>Auth Type</th><th>Target Domain</th><th>Credentials</th><th>Reliability</th></tr>
+<tr><th>Name</th><th>Auth Type</th><th>Target Domain</th><th>Credentials</th><th>Reliability</th><th>Actions</th></tr>
 </thead>
 <tbody>
 HTMLEOF2
@@ -381,6 +392,21 @@ cat >> "${HTML_FILE}" << 'HTMLEOF3'
 <p><a href="https://github.com/Amperstrand/captive-portal-recipes/blob/main/DISCLAIMER.md">Disclaimer</a> &#183; Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</a></p>
 </footer>
 </div>
+<script>
+var cache={};
+function togglePreview(e,id){
+  e.preventDefault();
+  var row=document.getElementById('preview-'+id);
+  if(!row)return;
+  if(row.classList.contains('open')){row.classList.remove('open');return;}
+  row.classList.add('open');
+  var code=row.querySelector('code');
+  if(code.textContent)return;
+  var src=row.previousElementSibling.querySelector('.recipe-link').href;
+  if(cache[id]){code.textContent=cache[id];return;}
+  fetch(src).then(function(r){return r.text();}).then(function(t){cache[id]=t;code.textContent=t;}).catch(function(){code.textContent='Failed to load script';});
+}
+</script>
 </body>
 </html>
 HTMLEOF3
