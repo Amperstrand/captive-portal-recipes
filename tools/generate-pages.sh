@@ -258,9 +258,9 @@ printf '%s\n' "${RECIPES_DATA}" | while IFS='|' read -r _id _name _auth _domain 
 	if [ "${_mod}" = "1" ]; then _cls="row-odd"; fi
 
 	_js_arg="togglePreview(event,&quot;${_id}&quot;)"
-	printf '      <tr class="%s"><td><a href="%s/%s.login" class="recipe-link" download>%s</a></td><td><code>%s</code></td><td><code class="domain">%s</code></td><td>%s</td><td>%s</td><td><a href="%s/%s.login" class="action-link" download>download</a>&#160;<a href="#" class="action-link" onclick="%s">preview</a></td></tr>\n' \
+	printf '      <tr class="%s"><td><a href="%s/%s.login" class="recipe-link" download>%s</a></td><td><code>%s</code></td><td><code class="domain">%s</code></td><td>%s</td><td>%s</td><td><a href="%s/%s.login" class="action-link" download>download</a>&#160;<a href="#" class="action-link preview-toggle" onclick="%s">preview</a></td></tr>\n' \
 		"${_cls}" "${_LINK_PREFIX}" "${_id}" "${_esc_name_html}" "${_esc_auth_html}" "${_esc_domain_html}" "${_cred_display}" "${_badge}" "${_LINK_PREFIX}" "${_id}" "${_js_arg}"
-	printf '      <tr class="preview-row" id="preview-%s"><td colspan="6"><pre><code></code></pre></td></tr>\n' "${_id}"
+	printf '      <tr class="preview-row" id="preview-%s"><td colspan="6"><button class="preview-close" onclick="closePreview(&quot;%s&quot;)">close</button><pre><code></code></pre></td></tr>\n' "${_id}" "${_id}"
 done > "${PROJECT_DIR}/.pages-table-rows.$$"
 
 # Generate the full HTML page
@@ -327,14 +327,19 @@ code{font-family:var(--mono);font-size:.8rem;background:rgba(110,118,129,.15);pa
 
 .cred-none{color:var(--text-muted);font-size:.8rem}
 
-.action-link{font-size:.75rem;padding:.15em .4em;border-radius:4px;background:rgba(110,118,129,.15);color:var(--text-muted);white-space:nowrap}
+.action-link{font-size:.75rem;padding:.15em .4em;border-radius:4px;background:rgba(110,118,129,.15);color:var(--text-muted);white-space:nowrap;transition:background .15s,color .15s}
 .action-link:hover{color:var(--accent);text-decoration:none;background:rgba(110,118,129,.25)}
+.action-link.active{color:var(--red);background:rgba(248,81,73,.15)}
+
+.active-row{background:rgba(88,166,255,.06)!important}
 
 .preview-row{display:none;background:var(--surface)}
 .preview-row.open{display:table-row}
-.preview-row td{padding:0}
+.preview-row td{padding:0;position:relative}
 .preview-row pre{margin:0;padding:.75rem 1rem;overflow-x:auto;max-height:400px;overflow-y:auto}
 .preview-row code{font-family:var(--mono);font-size:.75rem;line-height:1.5;color:var(--text);background:none;padding:0;white-space:pre}
+.preview-close{position:absolute;top:.5rem;right:.5rem;font-size:.7rem;padding:.25em .5em;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;line-height:1}
+.preview-close:hover{color:var(--red);border-color:rgba(248,81,73,.3)}
 
 /* Footer */
 footer{text-align:center;padding:1.5rem 0;border-top:1px solid var(--border);color:var(--text-muted);font-size:.8rem;line-height:1.8}
@@ -394,15 +399,33 @@ cat >> "${HTML_FILE}" << 'HTMLEOF3'
 </div>
 <script>
 var cache={};
+function closePreview(id){
+  var row=document.getElementById('preview-'+id);
+  if(!row)return;
+  row.classList.remove('open');
+  var parent=row.previousElementSibling;
+  if(parent)parent.classList.remove('active-row');
+  var link=parent?parent.querySelector('.preview-toggle'):null;
+  if(link){link.textContent='preview';link.classList.remove('active');}
+}
 function togglePreview(e,id){
   e.preventDefault();
   var row=document.getElementById('preview-'+id);
   if(!row)return;
-  if(row.classList.contains('open')){row.classList.remove('open');return;}
+  if(row.classList.contains('open')){closePreview(id);return;}
+  var allOpen=document.querySelectorAll('.preview-row.open');
+  for(var i=0;i<allOpen.length;i++){
+    var oid=allOpen[i].id.replace('preview-','');
+    closePreview(oid);
+  }
   row.classList.add('open');
+  var parent=row.previousElementSibling;
+  if(parent)parent.classList.add('active-row');
+  var link=parent?parent.querySelector('.preview-toggle'):null;
+  if(link){link.textContent='close';link.classList.add('active');}
   var code=row.querySelector('code');
   if(code.textContent)return;
-  var src=row.previousElementSibling.querySelector('.recipe-link').href;
+  var src=parent.querySelector('.recipe-link').href;
   if(cache[id]){code.textContent=cache[id];return;}
   fetch(src).then(function(r){return r.text();}).then(function(t){cache[id]=t;code.textContent=t;}).catch(function(){code.textContent='Failed to load script';});
 }
