@@ -1,0 +1,117 @@
+name: Test Recipe Compiler
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq jq
+
+      # ── Static checks ──────────────────────────────────────────
+
+      - name: Check all templates pass sh -n syntax check
+        run: |
+          fail=0
+          for f in templates/targets/travelmate/*.sh.template; do
+            if ! sh -n "$f" 2>&1; then
+              echo "::error file=$f::Template failed sh -n syntax check"
+              fail=1
+            fi
+          done
+          [ "$fail" = 0 ] && echo "All templates pass sh -n" || exit 1
+
+      - name: Check compiler passes sh -n syntax check
+        run: sh -n compiler/compile-recipe.sh
+
+      - name: Validate all recipe JSON files
+        run: |
+          count=0
+          for f in recipes/*.json; do
+            if ! jq empty "$f" 2>&1; then
+              echo "::error file=$f::Invalid JSON"
+              exit 1
+            fi
+            count=$((count + 1))
+          done
+          echo "Validated ${count} recipe files"
+
+      # ── Compile & check ────────────────────────────────────────
+
+      - name: Compile all recipes
+        run: |
+          COMPILE_DIR="/tmp/recipe-compile-test"
+          mkdir -p "${COMPILE_DIR}"
+          compiled=0
+          failed=0
+          for f in recipes/*.json; do
+            name="$(basename "$f" .json)"
+             if sh compiler/compile-recipe.sh "$f" -o "${COMPILE_DIR}/${name}.login" 2>&1; then
+              compiled=$((compiled + 1))
+            else
+              echo "::error file=$f::Compilation failed for $name"
+              failed=$((failed + 1))
+            fi
+          done
+          echo "Compiled ${compiled} recipes (${failed} failures)"
+          [ "${failed}" = 0 ] || exit 1
+
+      - name: Check all compiled .login scripts pass sh -n
+        run: |
+          fail=0
+          for f in /tmp/recipe-compile-test/*.login; do
+            if ! sh -n "$f" 2>&1; then
+              echo "::error file=$f::Compiled script failed sh -n syntax check"
+              fail=1
+            fi
+          done
+          total=$(ls /tmp/recipe-compile-test/*.login | wc -l)
+          echo "Syntax checked ${total} compiled scripts"
+          [ "$fail" = 0 ] || exit 1
+
+      # ── Mock test suite ────────────────────────────────────────
+
+      - name: Run mock test suite
+        run: |
+          # Ensure mock binaries are executable
+          chmod +x tests/mock-bin/*
+
+          # On Ubuntu /bin/sh is dash; use bash for test runner since
+          # some compiled scripts use bash-specific ${var:pos:len}
+          # in urlencode() (only triggered with actual credentials,
+          # but bash ensures full compatibility).
+          bash tests/test-recipes.sh /tmp/recipe-compile-test
+
+      # ── Summary ────────────────────────────────────────────────
+
+      - name: Generate summary
+        if: always()
+        run: |
+          recipes=$(ls recipes/*.json 2>/dev/null | wc -l | tr -d ' ')
+          compiled=$(ls /tmp/recipe-compile-test/*.login 2>/dev/null | wc -l | tr -d ' ')
+           templates=$(ls templates/targets/travelmate/*.sh.template 2>/dev/null | wc -l | tr -d ' ')
+
+          {
+            echo "## Recipe Compiler Test Results"
+            echo ""
+            echo "| Item | Count |"
+            echo "|------|-------|"
+            echo "| Templates | ${templates} |"
+            echo "| Recipe JSON files | ${recipes} |"
+            echo "| Compiled .login scripts | ${compiled} |"
+            echo ""
+            echo "### Checks"
+            echo "- Template syntax (sh -n)"
+            echo "- Compiler syntax (sh -n)"
+            echo "- Recipe JSON validity"
+            echo "- Compilation of all recipes"
+            echo "- Compiled script syntax (sh -n)"
+            echo "- Mock test suite (all 44 recipes)"
+          } >> "$GITHUB_STEP_SUMMARY"
