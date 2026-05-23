@@ -1,0 +1,21 @@
+# Compiled output
+output/
+*.login
+
+# Test artifacts
+tests/tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Capture artifacts (may contain sensitive data)
+captures/
+*.har
