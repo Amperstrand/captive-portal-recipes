@@ -270,6 +270,9 @@ cat > "${HTML_FILE}" << 'HTMLEOF'
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Captive Portal Recipes</title>
 <meta name="description" content="Template-based captive portal login recipes compiled for travelmate and similar platforms">
 <style>
@@ -345,6 +348,7 @@ code{font-family:var(--mono);font-size:.8rem;background:rgba(110,118,129,.15);pa
 footer{text-align:center;padding:1.5rem 0;border-top:1px solid var(--border);color:var(--text-muted);font-size:.8rem;line-height:1.8}
 footer a{color:var(--text-muted)}
 footer a:hover{color:var(--accent)}
+.build-time{font-size:.7rem;color:rgba(139,148,158,.5);margin-top:.5rem}
 
 /* Responsive */
 @media(max-width:640px){
@@ -395,6 +399,11 @@ cat >> "${HTML_FILE}" << 'HTMLEOF3'
 <footer>
 <p><a href="https://github.com/Amperstrand/captive-portal-recipes">Amperstrand/captive-portal-recipes</a></p>
 <p><a href="https://github.com/Amperstrand/captive-portal-recipes/blob/main/DISCLAIMER.md">Disclaimer</a> &#183; Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</a></p>
+HTMLEOF3
+
+printf '<p class="build-time">built: %s</p>\n' "$(date -u '+%Y-%m-%dT%H:%MZ')" >> "${HTML_FILE}"
+
+cat >> "${HTML_FILE}" << 'HTMLEOF4'
 </footer>
 </div>
 <script>
@@ -432,7 +441,7 @@ function togglePreview(e,id){
 </script>
 </body>
 </html>
-HTMLEOF3
+HTMLEOF4
 
 # ── Summary ──────────────────────────────────────────────────────────
 echo "Generated ${HTML_FILE} with ${RECIPE_COUNT} recipes"
