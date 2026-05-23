@@ -1,0 +1,185 @@
+#!/bin/sh
+# mock-curl - Mock curl for travelmate recipe testing
+# Returns appropriate responses based on MOCK_RECIPE env var and call counter
+#shellcheck disable=all
+
+COUNTER_FILE="/tmp/mock-curl-counter"
+if [ -f "${COUNTER_FILE}" ]; then
+	COUNT="$(cat "${COUNTER_FILE}")"
+else
+	COUNT=0
+fi
+
+# Parse curl arguments
+URL=""
+DATA=""
+WRITE_OUT=""
+COOKIE_JAR=""
+OUTPUT_FILE=""
+IS_POST=0
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--write-out) WRITE_OUT="$2"; shift 2 ;;
+		--cookie-jar) COOKIE_JAR="$2"; shift 2 ;;
+		--cookie) shift 2 ;;
+		--output) OUTPUT_FILE="$2"; shift 2 ;;
+		--data) DATA="$2"; IS_POST=1; shift 2 ;;
+		--header) shift 2 ;;
+		--referer) shift 2 ;;
+		--user-agent) shift 2 ;;
+		--request) shift 2 ;;
+		-sS|-s|-L) shift ;;
+		--max-time|--connect-timeout) shift 2 ;;
+		--*) shift 2 ;;
+		-*) shift ;;
+		*) URL="$1"; shift ;;
+	esac
+done
+
+if [ -n "${MOCK_VERBOSE}" ]; then
+	echo "  MOCK-CURL [${MOCK_RECIPE}] call#${COUNT}: $(if [ ${IS_POST} = 1 ]; then echo POST; else echo GET; fi) ${URL}" >&2
+fi
+
+RECIPE="${MOCK_RECIPE}"
+BODY=""
+WRITEOUT_VAL=""
+
+# ── Handle --write-out requests (redirect URL extraction) ──
+if [ -n "${WRITE_OUT}" ]; then
+	case "${RECIPE}" in
+		cisco-meraki)
+			WRITEOUT_VAL="https://eu.network-auth.com/splash/?base_grant_url=https%3A%2F%2Feu.network-auth.com%2Fgrant"
+			;;
+		vodafone-de)
+			WRITEOUT_VAL="http://hotspot.vodafone.de/portal/?sid=test_sid_123"
+			;;
+		*)
+			WRITEOUT_VAL="https://portal.example.com/redirect"
+			;;
+	esac
+
+# ── Handle --cookie-jar requests ──
+	elif [ -n "${COOKIE_JAR}" ]; then
+	# Write cookie jar in proper Netscape format: domain \t include_subdomains \t path \t secure \t expiry \t name \t value
+	case "${RECIPE}" in
+		wifibahn)
+			printf 'wifi.bahn.de\tTRUE\t/\tFALSE\t0\tcsrf\ttest_csrf_token\n' > "${COOKIE_JAR}"
+			;;
+		wifipass)
+			printf 'wifipass.org\tTRUE\t/\tFALSE\t0\tPHPSESSID\ttest_session_token\n' > "${COOKIE_JAR}"
+			;;
+		*)
+			printf 'example.com\tTRUE\t/\tFALSE\t0\tsession\ttest_value\n' > "${COOKIE_JAR}"
+			;;
+	esac
+
+# ── Handle POST requests ──
+elif [ ${IS_POST} = 1 ]; then
+	case "${RECIPE}" in
+		# JSON API: single-call recipes
+		t-mobile-hotspot)
+			BODY='{"user":{"wlanLoginStatus":"connected"},"success":true}'
+			;;
+		targetbox|imaster-nce)
+			BODY='{"success":true}'
+			;;
+		# JSON API: multi-call recipes
+		commerzbank-wifi)
+			case ${COUNT} in
+				0) BODY='{"status":"ok"}' ;;
+				1) BODY='{"info":{"subscribe":{"login":"testlogin","password":"testpass"}}}' ;;
+				2) BODY='' ;;
+			esac
+			;;
+		unwired-graphql)
+			case ${COUNT} in
+				0) BODY='{"data":{"splashpage":{"splashpage":{"pages":[{"widgets":[{"__typename":"ConnectWidget","widget_id":"widget_123"}]}]}}}}' ;;
+				1) BODY='' ;;
+			esac
+			;;
+		vodafone-de)
+			BODY='{"success":true}'
+			;;
+		# Form-submit with contains_string success
+		fortinet-clickthrough)
+			BODY='keepalive'
+			;;
+		dokom21-hotspot)
+			BODY='Login erfolgreich.'
+			;;
+		mist-portal|mypowerspot-de)
+			BODY='success'
+			;;
+		unifi-guest)
+			BODY='authorized'
+			;;
+		# Cookie-chain
+		wifipass)
+			BODY='success'
+			;;
+		# Multi-step-form: accor-hotels
+		accor-hotels)
+			if [ ${COUNT} = 5 ]; then
+				BODY='online'
+			fi
+			;;
+		# Default: empty body (for empty_body success check)
+		*)
+			BODY=''
+			;;
+	esac
+
+# ── Handle GET requests ──
+else
+	case "${RECIPE}" in
+		# Click-through-grant: second call returns empty
+		cisco-meraki)
+			BODY=''
+			;;
+		# CSRF: wifibahn doesn't have a standalone GET (handled by --cookie-jar)
+		# JSON API: vodafone-de call 1 is session GET
+		vodafone-de)
+			BODY='{"session":"test_session_456","loginProfiles":[{"id":"4"}]}'
+			;;
+		# CHAP: need hexMD5 + chap-id/chap-challenge in HTML
+		mikrotik-chap|ruby-workspaces)
+			BODY='<html><body><script>function hexMD5(s){return s;}</script><form action="/login"><input type="hidden" name="chap-id" value="00"><input type="hidden" name="chap-challenge" value="aabbccdd"></form></body></html>'
+			;;
+		# JS redirect - use ""URL trick so the awk extraction works
+		# (gsub(/.*"/, "", s) is greedy to last ", so URL must be after the last ")
+		socialwifi)
+			if [ ${COUNT} = 0 ]; then
+				BODY='<html><body><script>window.location = ""https://success.example.com/auth</script></body></html>'
+			else
+				BODY=''
+			fi
+			;;
+		# Multi-step-form: return HTML forms for step GETs (calls 0, 2, 4)
+		accor-hotels)
+			BODY='<html><body><form action="/step"><input type="hidden" name="token" value="abc123"></form></body></html>'
+			;;
+		# JSON API: these start with POST, no initial GET
+		t-mobile-hotspot|targetbox|imaster-nce|unwired-graphql|commerzbank-wifi)
+			BODY=''
+			;;
+		# Default form-submit: HTML with form + hidden fields
+		*)
+			BODY='<html><body><form action="/login"><input type="hidden" name="token" value="abc123"></form></body></html>'
+			;;
+	esac
+fi
+
+# ── Output ──
+if [ -n "${OUTPUT_FILE}" ] && [ "${OUTPUT_FILE}" != "/dev/null" ]; then
+	printf '%s' "${BODY}" > "${OUTPUT_FILE}"
+elif [ -z "${OUTPUT_FILE}" ]; then
+	printf '%s' "${BODY}"
+fi
+
+if [ -n "${WRITE_OUT}" ] && [ -n "${WRITEOUT_VAL}" ]; then
+	printf '%s' "${WRITEOUT_VAL}"
+fi
+
+# Increment counter
+echo $((COUNT + 1)) > "${COUNTER_FILE}"

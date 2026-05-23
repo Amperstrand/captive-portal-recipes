@@ -1,0 +1,4 @@
+#!/bin/sh
+# mock-nslookup - Always succeeds for testing
+#shellcheck disable=all
+exit 0

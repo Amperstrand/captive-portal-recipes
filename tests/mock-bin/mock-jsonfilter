@@ -1,0 +1,46 @@
+#!/bin/sh
+# mock-jsonfilter - jsonfilter replacement using jq
+# Supports: jsonfilter -q -l1 -e '@.path.to.field'
+# Handles: simple paths, [*] arrays, and [?(@.field=="value")] filter expressions
+#shellcheck disable=all
+
+EXPR=""
+while getopts "q:l:e:" opt; do
+	case $opt in
+		e) EXPR="$OPTARG" ;;
+	esac
+done
+
+[ -z "${EXPR}" ] && exit 0
+
+# Convert jsonfilter expression to jq expression
+# Remove @. prefix and prepend .
+JQ_EXPR="${EXPR#@.}"
+[ "${EXPR}" != "${JQ_EXPR}" ] && JQ_EXPR=".${JQ_EXPR}"
+
+# Convert filter expressions and array wildcards using awk
+# (sed has issues with " in patterns on BSD sed)
+JQ_EXPR=$(printf '%s' "${JQ_EXPR}" | awk '{
+	s = $0
+	# Handle filter expressions: [?(@.field=="value")]
+	while ((p1 = index(s, "[?(@")) > 0) {
+		rest = substr(s, p1 + 5)  # after [?(@.
+		eq = index(rest, "==")
+		if (eq > 0) {
+			field = substr(rest, 1, eq - 1)
+			rest = substr(rest, eq + 3)  # after =="
+			q = index(rest, "\"")
+			if (q > 0) {
+				value = substr(rest, 1, q - 1)
+				rest = substr(rest, q + 3)  # after ")]
+				prefix = substr(s, 1, p1 - 1)
+				s = prefix "[] | select(." field " == \"" value "\") | " rest
+			} else break
+		} else break
+	}
+	# Replace [*] with []
+	gsub(/\[\*\]/, "[]", s)
+	print s
+}')
+
+jq -r "${JQ_EXPR}" 2>/dev/null || true

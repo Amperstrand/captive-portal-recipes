@@ -1,0 +1,10 @@
+#!/bin/sh
+# md5sum wrapper for macOS - calls the real md5sum if available, otherwise uses md5
+#shellcheck disable=all
+if command -v /usr/local/bin/md5sum >/dev/null 2>&1; then
+	/usr/local/bin/md5sum
+elif command -v /opt/homebrew/bin/md5sum >/dev/null 2>&1; then
+	/opt/homebrew/bin/md5sum
+else
+	/sbin/md5 -r | /usr/bin/awk '{print $1}'
+fi
