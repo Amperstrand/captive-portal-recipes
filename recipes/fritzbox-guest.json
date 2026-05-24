@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [],
+    "domains": [
+      "fritz.box"
+    ],
+    "paths": [
+      "/untrusted_guest.lua"
+    ],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "http://${trm_domain}/trustme.lua?accept=",

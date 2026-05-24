@@ -2,9 +2,30 @@
   "id": "cisco-meraki",
   "name": "Cisco Meraki Click-Through",
   "travelmate_domain": "eu.network-auth.com",
-  "fallback_domains": ["my.meraki.net"],
+  "fallback_domains": [
+    "my.meraki.net"
+  ],
   "auth_type": "click-through-grant",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "BACK-FACTORY Besucher",
+      "MEET ME @ STARBUCKS",
+      "CLIENTES.LME",
+      "Free Wifi Ris8tto",
+      "JD-Gast-WiFi",
+      "DrMartens",
+      "P&C Hotspot",
+      "dm Kunden WLAN",
+      "EDEKA free-wifi"
+    ],
+    "domains": [
+      "*.network-auth.com"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "grant_url_source": "redirect_url",
     "grant_url_extract": "query_param",

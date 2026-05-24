@@ -5,6 +5,13 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "username_password",
+  "match": {
+    "ssids": [],
+    "domains": [],
+    "paths": [],
+    "body_contains": [],
+    "priority": 10
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "http://${trm_domain}",

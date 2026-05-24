@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "Hotspot S-Bahn Rhein-Ruhr"
+    ],
+    "domains": [
+      "10.10.10.1"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "http://${trm_domain}:2050/splash.html",
     "submit_url": "http://${trm_domain}:2050/nodogsplash_auth/",

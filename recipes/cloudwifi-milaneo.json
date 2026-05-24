@@ -5,6 +5,22 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "-free Milaneo Stuttgart",
+      "-free Koenigsbau Passagen",
+      "-Free -Thier Galerie Dortmund",
+      "Radiologie-GAST"
+    ],
+    "domains": [
+      "start.cloudwifi.de"
+    ],
+    "paths": [
+      "/redirect"
+    ],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "https://${trm_domain}",

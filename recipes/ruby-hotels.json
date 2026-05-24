@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "RUBY-HOTEL"
+    ],
+    "domains": [
+      "hotspot.ruby-hotels.com"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "form_page_url": "http://${trm_domain}/login?dst=",
     "submit_url": "http://${trm_domain}/login",

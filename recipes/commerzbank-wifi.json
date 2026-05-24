@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "json-api",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "Commerzbank-Wifi"
+    ],
+    "domains": [
+      "wifiaccess.co"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "success_check": "empty_body",
     "step1_name": "init session",

@@ -5,6 +5,19 @@
   "fallback_domains": [],
   "auth_type": "chap-md5",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "Ruby Workspaces"
+    ],
+    "domains": [
+      "hotspot.ruby-workspaces.com"
+    ],
+    "paths": [],
+    "body_contains": [
+      "hexMD5"
+    ],
+    "priority": 80
+  },
   "params": {
     "chap_detect": "hexMD5",
     "form_action": "http://${trm_domain}/login",

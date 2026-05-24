@@ -398,7 +398,7 @@ cat >> "${HTML_FILE}" << 'HTMLEOF3'
 </div>
 <footer>
 <p><a href="https://github.com/Amperstrand/captive-portal-recipes">Amperstrand/captive-portal-recipes</a></p>
-<p><a href="https://github.com/Amperstrand/captive-portal-recipes/blob/main/DISCLAIMER.md">Disclaimer</a> &#183; Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</a></p>
+<p><a href="match-manifest.json">match-manifest.json</a> &#183; <a href="https://github.com/Amperstrand/captive-portal-recipes/blob/main/DISCLAIMER.md">Disclaimer</a> &#183; Licensed under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3.0</a></p>
 HTMLEOF3
 
 printf '<p class="build-time">built: %s</p>\n' "$(date -u '+%Y-%m-%dT%H:%MZ')" >> "${HTML_FILE}"

@@ -5,6 +5,25 @@
   "fallback_domains": [],
   "auth_type": "multi-step-form",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "ibisbudget",
+      "movenpick",
+      "BBHOTELSGuest",
+      "-REWE gratis WLAN-",
+      "-Kaufland FreeWiFi-"
+    ],
+    "domains": [
+      "*.conn4.com"
+    ],
+    "paths": [
+      "/ident"
+    ],
+    "body_contains": [
+      "accor/i-accor/html-page-scene-wbs"
+    ],
+    "priority": 60
+  },
   "params": {
     "success_check": "contains_string",
     "success_string": "online",

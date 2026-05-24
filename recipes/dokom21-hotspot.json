@@ -5,6 +5,18 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "DSW21-WLAN",
+      "Hotspot Westfalenhallen"
+    ],
+    "domains": [
+      "hotspot.dokom21.de"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "https://${trm_domain}/${networkType}/Login",
     "submit_url": "https://${trm_domain}/${networkType}/Login",

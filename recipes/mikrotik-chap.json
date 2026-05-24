@@ -5,6 +5,19 @@
   "fallback_domains": [],
   "auth_type": "chap-md5",
   "credentials": "username_password",
+  "match": {
+    "ssids": [],
+    "domains": [
+      "hotspot.local"
+    ],
+    "paths": [
+      "/login"
+    ],
+    "body_contains": [
+      "hexMD5"
+    ],
+    "priority": 50
+  },
   "params": {
     "chap_detect": "hexMD5",
     "form_action": "http://${trm_domain}/login",

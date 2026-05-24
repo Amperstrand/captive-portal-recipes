@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "SSB fuer Dich - WiFi Free"
+    ],
+    "domains": [],
+    "paths": [
+      "/portal/gateway"
+    ],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "https://${trm_domain}/portal/gateway",

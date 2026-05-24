@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "json-api",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "Cosmo-Gast"
+    ],
+    "domains": [
+      "device.imaster-nce.de"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "success_check": "json_true",
     "step1_name": "anonymous login form POST",

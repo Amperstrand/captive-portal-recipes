@@ -5,6 +5,15 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [],
+    "domains": [
+      "portal.binarynoise.de"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 90
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "http://${trm_domain}:8001/login",

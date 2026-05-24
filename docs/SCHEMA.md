@@ -28,6 +28,18 @@ Recipes are compiled into target-specific scripts (travelmate .login, standalone
 | `auth_type` | string | One of the 8 types above |
 | `credentials` | array | Which credentials are needed: `[]`, `["username"]`, `["username","password"]` |
 
+### Match Object (optional, recommended)
+
+The `match` object enables auto-detection of which recipe applies to a given captive portal. A detection tool can match against SSID, domain, URL path, and response body content.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `match.ssids` | array | `[]` | WiFi SSID patterns (supports `*` wildcard, e.g. `"-REWE gratis WLAN-*"`) |
+| `match.domains` | array | `[]` | Domain patterns (supports `*` wildcard suffix, e.g. `"*.conn4.com"`) |
+| `match.paths` | array | `[]` | URL path prefixes (exact match, e.g. `"/ident"`) |
+| `match.body_contains` | array | `[]` | Strings that must appear in the captive portal response body |
+| `match.priority` | number | `50` | Higher = preferred when multiple recipes match (range 0-100) |
+
 ### Optional (all auth_types)
 
 | Field | Type | Default | Description |

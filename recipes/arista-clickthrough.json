@@ -5,6 +5,19 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "Commerzbank-Wifi2.0"
+    ],
+    "domains": [
+      "*.agni.arista.io"
+    ],
+    "paths": [
+      "/portal"
+    ],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "https://${trm_domain}/portal/${orgId}/clickThrough/logon",

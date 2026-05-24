@@ -5,6 +5,15 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "LEGO Store Guest"
+    ],
+    "domains": [],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "http://${trm_domain}",

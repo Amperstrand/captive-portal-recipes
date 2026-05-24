@@ -5,6 +5,15 @@
   "fallback_domains": [],
   "auth_type": "js-redirect",
   "credentials": "none",
+  "match": {
+    "ssids": [],
+    "domains": [
+      "hotspot.socialwibox.com"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "follow_redirect": "true",
     "success_check": "empty_body"

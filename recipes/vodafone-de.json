@@ -5,6 +5,19 @@
   "fallback_domains": [],
   "auth_type": "json-api",
   "credentials": "username_password",
+  "match": {
+    "ssids": [
+      "@VodafoneWifi",
+      "Kunstmuseum WLAN",
+      "_free-wifi-stuttgart_(official)"
+    ],
+    "domains": [
+      "hotspot.vodafone.de"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "success_check": "json_true",
     "step1_name": "get redirect and extract sid",

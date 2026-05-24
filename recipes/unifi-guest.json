@@ -5,6 +5,18 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "L'Osteria",
+      "Henri Willig GUEST"
+    ],
+    "domains": [],
+    "paths": [
+      "/guest/s/"
+    ],
+    "body_contains": [],
+    "priority": 50
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "http://${trm_domain}/guest/s/${site}/login",

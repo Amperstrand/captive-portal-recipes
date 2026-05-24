@@ -5,6 +5,13 @@
   "fallback_domains": [],
   "auth_type": "cookie-chain",
   "credentials": "none",
+  "match": {
+    "ssids": [],
+    "domains": [],
+    "paths": [],
+    "body_contains": [],
+    "priority": 50
+  },
   "params": {
     "init_url": "https://wifipass.org/login",
     "cookie_extract_pattern": "/PHPSESSID/{print $NF}",

@@ -2,9 +2,22 @@
   "id": "primark-wifi",
   "name": "Primark Public WiFi",
   "travelmate_domain": "portal.wifi.primark.net",
-  "fallback_domains": ["www.primark.com"],
+  "fallback_domains": [
+    "www.primark.com"
+  ],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "PRIMARK_PUBLIC"
+    ],
+    "domains": [
+      "www.primark.com"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "https://portal.wifi.primark.net/auth/index.html/u",

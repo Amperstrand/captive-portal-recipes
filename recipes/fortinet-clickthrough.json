@@ -5,6 +5,18 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "ITS - FREEWIFI",
+      "Douglas Guest"
+    ],
+    "domains": [],
+    "paths": [
+      "/fgtauth"
+    ],
+    "body_contains": [],
+    "priority": 70
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "http://${trm_domain}/fgtauth",

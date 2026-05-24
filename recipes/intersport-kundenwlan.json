@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "match": {
+    "ssids": [
+      "INTERSPORTkundenwlan"
+    ],
+    "domains": [
+      "wlan.intersport-gruppe.de"
+    ],
+    "paths": [],
+    "body_contains": [],
+    "priority": 80
+  },
   "params": {
     "form_page_url": "${trm_captiveurl}",
     "submit_url": "https://${trm_domain}",

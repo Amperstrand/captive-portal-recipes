@@ -145,12 +145,15 @@ jobs:
 
       - name: Compile recipes and generate pages
         run: |
-          chmod +x compiler/compile-recipe.sh tools/generate-pages.sh
+          chmod +x compiler/compile-recipe.sh tools/generate-pages.sh tools/generate-manifest.sh
           sh tools/generate-pages.sh \
             --compile-dir _site/output \
             --output-dir _site \
             --recipes-dir recipes \
             --compiler compiler/compile-recipe.sh
+          sh tools/generate-manifest.sh \
+            --recipes-dir recipes \
+            --output _site/match-manifest.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
