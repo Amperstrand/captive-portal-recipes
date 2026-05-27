@@ -208,6 +208,69 @@ apply_substs() {
 	done
 }
 
+# ── Shared helpers ──────────────────────────────────────────────────
+
+subst_common() {
+	subst "%%NAME%%	${recipe_name}"
+	subst "%%ID%%	${recipe_id}"
+	subst "%%DOMAIN%%	${recipe_domain}"
+	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
+	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+}
+
+apply_common_finish() {
+	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
+	apply_substs
+}
+
+# Generate awk extraction lines from comma-separated varname:awkcode spec
+# Usage: gen_awk_extracts <spec> <source_var> <outfile> <tmp_prefix>
+gen_awk_extracts() {
+	_ea_spec="$1"
+	_ea_source="$2"
+	_ea_outfile="$3"
+	_ea_prefix="$4"
+	[ -z "${_ea_spec}" ] && return
+	_oldifs="${IFS}"; IFS=','
+	for _ext in ${_ea_spec}; do
+		_varname="${_ext%%:*}"; _awk_code="${_ext#*:}"
+		[ -z "${_varname}" ] || [ -z "${_awk_code}" ] && continue
+		_ext_tmp="${SUBST_DIR}/${_ea_prefix}_${_varname}"
+		cat << 'AWKEXTEOF' > "${_ext_tmp}"
+__EXT_VAR__="$(printf "%s" "${__EXT_SRC__}" 2>/dev/null | "${trm_awkcmd}" '__EXT_AWK__')"
+AWKEXTEOF
+		marker_subst "__EXT_VAR__" "${_varname}" "${_ext_tmp}"
+		marker_subst "__EXT_SRC__" "${_ea_source}" "${_ext_tmp}"
+		marker_subst "__EXT_AWK__" "${_awk_code}" "${_ext_tmp}"
+		cat "${_ext_tmp}" >> "${_ea_outfile}"
+	done
+	IFS="${_oldifs}"
+}
+
+# Generate jsonfilter extraction lines from comma-separated varname:jsonpath spec
+# Usage: gen_json_extracts <spec> <source_var> <outfile> <tmp_prefix>
+gen_json_extracts() {
+	_ej_spec="$1"
+	_ej_source="$2"
+	_ej_outfile="$3"
+	_ej_prefix="$4"
+	[ -z "${_ej_spec}" ] && return
+	_oldifs="${IFS}"; IFS=','
+	for _ext in ${_ej_spec}; do
+		_varname="${_ext%%:*}"; _jsonpath="${_ext#*:}"
+		[ -z "${_varname}" ] || [ -z "${_jsonpath}" ] && continue
+		_ext_tmp="${SUBST_DIR}/${_ej_prefix}_${_varname}"
+		cat << 'JSONEXTEOF' > "${_ext_tmp}"
+__EXT_VAR__="$(printf "%s" "${__EXT_SRC__}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '__EXT_JSON__')"
+JSONEXTEOF
+		marker_subst "__EXT_VAR__" "${_varname}" "${_ext_tmp}"
+		marker_subst "__EXT_SRC__" "${_ej_source}" "${_ext_tmp}"
+		marker_subst "__EXT_JSON__" "${_jsonpath}" "${_ext_tmp}"
+		cat "${_ext_tmp}" >> "${_ej_outfile}"
+	done
+	IFS="${_oldifs}"
+}
+
 # ── Generators ──────────────────────────────────────────────────────
 TAB="$(printf '\t')"
 
@@ -398,19 +461,7 @@ STEPEOF
 			cat "${_step_tmp}" >> "${_tmpfile}"
 
 			if [ -n "${_step_extract}" ]; then
-				_oldifs="${IFS}"; IFS=','
-				for _ext in ${_step_extract}; do
-					_varname="${_ext%%:*}"; _awk_code="${_ext#*:}"
-					[ -z "${_varname}" ] || [ -z "${_awk_code}" ] && continue
-					_ext_tmp="${SUBST_DIR}/ext_${_step}_${_varname}"
-					cat << 'EXTEOF' > "${_ext_tmp}"
-__EXT_VAR__="$(printf "%s" "${redirect_url}" 2>/dev/null | "${trm_awkcmd}" '__EXT_AWK__')"
-EXTEOF
-					marker_subst "__EXT_VAR__" "${_varname}" "${_ext_tmp}"
-					marker_subst "__EXT_AWK__" "${_awk_code}" "${_ext_tmp}"
-					cat "${_ext_tmp}" >> "${_tmpfile}"
-				done
-				IFS="${_oldifs}"
+				gen_awk_extracts "${_step_extract}" "redirect_url" "${_tmpfile}" "ext_${_step}"
 			fi
 			;;
 		*)
@@ -428,13 +479,7 @@ STEPEOF
 			cat "${_step_tmp}" >> "${_tmpfile}"
 
 			if [ -n "${_step_extract}" ]; then
-				_oldifs="${IFS}"; IFS=','
-				for _ext in ${_step_extract}; do
-					_varname="${_ext%%:*}"; _jsonpath="${_ext#*:}"
-					[ -z "${_varname}" ] || [ -z "${_jsonpath}" ] && continue
-					printf '%s="$(printf "%%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '"'"'%s'"'"')"\n' "${_varname}" "${_jsonpath}" >> "${_tmpfile}"
-				done
-				IFS="${_oldifs}"
+				gen_json_extracts "${_step_extract}" "raw_html" "${_tmpfile}" "jext_${_step}"
 			fi
 			;;
 		esac
@@ -457,18 +502,13 @@ compile_click_through_grant() {
 	_grant_method="$(json_get_nested "params.grant_method" 2>/dev/null || echo "GET")"
 	[ "${_grant_method}" = "POST" ] && _method_opt="--request POST " || _method_opt=""
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst "%%GRANT_URL_PARAM%%	${_grant_url_param}"
 	subst "%%GRANT_URL_PARAM_LEN%%	${_param_len}"
 	subst "%%CONTINUE_URL%%	${_continue_url}"
 	subst "%%DURATION%%	${_duration}"
 	subst "%%GRANT_METHOD_OPT%%	${_method_opt}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 compile_form_submit() {
@@ -480,20 +520,15 @@ compile_form_submit() {
 	_extra_fields_raw="$(json_get_nested "params.extra_fields" 2>/dev/null || true)"
 	[ -n "${_extra_fields_raw}" ] && _extra_fields="&${_extra_fields_raw}" || _extra_fields=""
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
+	subst_common
 	subst "%%URLENCODE_FUNC%%	$(gen_urlencode_func)"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
 	subst "%%FORM_PAGE_URL%%	${_form_page_url}"
 	subst "%%FORM_ACTION_DEFAULT%%	${_form_action_default}"
 	subst "%%USERNAME_FIELD%%	${_username_field}"
 	subst "%%PASSWORD_FIELD%%	${_password_field}"
 	subst "%%EXTRA_FIELDS%%	${_extra_fields}"
 	subst "%%SUBMIT_URL%%	${_submit_url}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 compile_csrf_form_submit() {
@@ -536,31 +571,21 @@ REGEXEOF
 		*) echo "error: unknown csrf_source '${_csrf_source}'" >&2; exit 1 ;;
 	esac
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst_file "%%CSRF_FETCH_AND_EXTRACT%%" "${_csrf_tmp}"
 	subst "%%CSRF_HEADER%%	${_csrf_header}"
 	subst "%%CSRF_FIELD_NAME%%	${_csrf_field_name}"
 	subst "%%EXTRA_FIELDS%%	${_extra_fields}"
 	subst "%%CSRF_SUBMIT_URL%%	${_csrf_submit_url}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 compile_json_api() {
 	_steps_tmp="$(gen_json_api_steps)"
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst_file "%%STEPS%%" "${_steps_tmp}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 compile_chap_md5() {
@@ -592,11 +617,7 @@ challenge="$(printf "%s" "${raw_html}" 2>/dev/null | "${trm_awkcmd}" 'match(tolo
 CHAPCHALEOF
 	fi
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst "%%CHAP_DETECT%%	${_chap_detect}"
 	subst_file "%%CHAP_ID_EXTRACT%%" "${_id_tmp}"
 	subst_file "%%CHAP_CHALLENGE_EXTRACT%%" "${_chal_tmp}"
@@ -605,8 +626,7 @@ CHAPCHALEOF
 	subst "%%RESPONSE_FIELD%%	${_response_field}"
 	subst "%%DST_FIELD%%	${_dst_field}"
 	subst "%%DST_DEFAULT%%	${_dst_default}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 # ── Multi-step form step generator ──────────────────────────────────
@@ -655,19 +675,7 @@ MSEOF
 		cat "${_step_tmp}" >> "${_tmpfile}"
 
 		if [ -n "${_step_extract}" ]; then
-			_oldifs="${IFS}"; IFS=','
-			for _ext in ${_step_extract}; do
-				_varname="${_ext%%:*}"; _awk_code="${_ext#*:}"
-				[ -z "${_varname}" ] || [ -z "${_awk_code}" ] && continue
-				_ext_tmp="${SUBST_DIR}/msf_ext_${_step}_${_varname}"
-				cat << 'EXTEOF' > "${_ext_tmp}"
-__EXT_VAR__="$(printf "%s" "${raw_html}" 2>/dev/null | "${trm_awkcmd}" '__EXT_AWK__')"
-EXTEOF
-				marker_subst "__EXT_VAR__" "${_varname}" "${_ext_tmp}"
-				marker_subst "__EXT_AWK__" "${_awk_code}" "${_ext_tmp}"
-				cat "${_ext_tmp}" >> "${_tmpfile}"
-			done
-			IFS="${_oldifs}"
+			gen_awk_extracts "${_step_extract}" "raw_html" "${_tmpfile}" "msf_ext_${_step}"
 		fi
 		_step=$((_step + 1))
 	done
@@ -713,28 +721,18 @@ FOLLEOF
 		printf '# redirect not followed by configuration' > "${_follow_tmp}"
 	fi
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst_file "%%JS_EXTRACT%%" "${_js_tmp}"
 	subst_file "%%FOLLOW_REDIRECT%%" "${_follow_tmp}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 compile_multi_step_form() {
 	_steps_tmp="$(gen_multi_step_form_steps)"
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst_file "%%STEPS%%" "${_steps_tmp}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 compile_cookie_chain() {
@@ -752,18 +750,13 @@ compile_cookie_chain() {
 		printf 'session_token="$("${trm_awkcmd}" '"'"'NR>3{print $NF}'"'"' "${cookie_jar}" 2>/dev/null)"' > "${_cookie_tmp}"
 	fi
 
-	subst "%%NAME%%	${recipe_name}"
-	subst "%%ID%%	${recipe_id}"
-	subst "%%DOMAIN%%	${recipe_domain}"
-	subst "%%CREDENTIAL_SETUP%%	$(gen_credential_setup)"
-	subst "%%FALLBACK_DOMAINS%%	$(gen_fallback_domains)"
+	subst_common
 	subst "%%INIT_URL%%	${_init_url}"
 	subst_file "%%COOKIE_EXTRACT%%" "${_cookie_tmp}"
 	subst "%%EXTRA_HEADERS%%	${_extra_headers}"
 	subst "%%POST_DATA%%	${_post_data}"
 	subst "%%SUBMIT_URL%%	${_submit_url}"
-	subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
-	apply_substs
+	apply_common_finish
 }
 
 # ── Dispatch ────────────────────────────────────────────────────────
