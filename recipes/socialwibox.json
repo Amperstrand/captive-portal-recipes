@@ -1,0 +1,24 @@
+{
+  "id": "socialwibox",
+  "name": "SocialwiBox Hotspot",
+  "travelmate_domain": "hotspot.socialwibox.com",
+  "fallback_domains": [],
+  "auth_type": "multi-step-form",
+  "credentials": "none",
+  "match": {
+    "ssids": [],
+    "domains": ["hotspot.socialwibox.com"],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "step1_url": "${trm_captiveurl}",
+    "step1_name": "submit redirect form",
+    "step1_extra_fields": "",
+    "step2_url": "http://${trm_domain}/terms",
+    "step2_name": "follow terms link and submit",
+    "step2_extra_fields": "",
+    "success_check": "empty_body"
+  }
+}

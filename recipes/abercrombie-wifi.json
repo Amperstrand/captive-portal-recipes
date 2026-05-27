@@ -1,0 +1,25 @@
+{
+  "id": "abercrombie-wifi",
+  "name": "Abercrombie & Fitch WiFi",
+  "travelmate_domain": "storewifi.abercrombie.com",
+  "fallback_domains": [],
+  "auth_type": "jwt-sign",
+  "credentials": "none",
+  "match": {
+    "ssids": ["@Hollister Co. Free Wi-Fi"],
+    "domains": ["storewifi.abercrombie.com"],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "jwt_header": "{\"alg\":\"HS256\",\"typ\":\"JWT\"}",
+    "jwt_payload": "{\"ap_mac\":\"${ap_mac}\",\"wlan_id\":\"${wlan_id}\",\"client_mac\":\"${client_mac}\",\"expires\":${expires}}",
+    "jwt_secret": "shared_secret_placeholder",
+    "jwt_query_param": "jwt",
+    "request_url": "https://storewifi.abercrombie.com/authorize?jwt=${jwt_token}",
+    "request_method": "GET",
+    "success_check": "redirect_match",
+    "success_pattern": "success"
+  }
+}

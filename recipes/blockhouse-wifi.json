@@ -1,0 +1,29 @@
+{
+  "id": "blockhouse-wifi",
+  "name": "BlockHouse WiFi",
+  "travelmate_domain": "wlan.block-house.de",
+  "fallback_domains": [],
+  "auth_type": "js-parse",
+  "credentials": "none",
+  "match": {
+    "ssids": ["BLOCK HOUSE WIFI"],
+    "domains": ["wlan.block-house.de"],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "js_page_url": "${trm_captiveurl}",
+    "js_extract1_var": "post_url",
+    "js_extract1_pattern": "postToUrl[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract1_default": "",
+    "js_extract2_var": "port_val",
+    "js_extract2_pattern": "port[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract2_default": "",
+    "submit_url": "http://${trm_domain}:${port_val}${post_url}",
+    "submit_method": "POST",
+    "submit_data": "timestamp=$(date +%s)",
+    "submit_content_type": "application/x-www-form-urlencoded",
+    "success_check": "empty_body"
+  }
+}

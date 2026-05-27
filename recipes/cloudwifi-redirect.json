@@ -1,0 +1,32 @@
+{
+  "id": "cloudwifi-redirect",
+  "name": "CloudWiFi Redirect (Koenigsbau/Thier Galerie)",
+  "travelmate_domain": "start.cloudwifi.de",
+  "fallback_domains": [],
+  "auth_type": "js-parse",
+  "credentials": "none",
+  "match": {
+    "ssids": ["-free Koenigsbau Passagen", "-Free -Thier Galerie Dortmund", "Radiologie-GAST"],
+    "domains": ["start.cloudwifi.de"],
+    "paths": ["/redirect"],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "js_page_url": "${trm_captiveurl}",
+    "js_extract1_var": "device_mac",
+    "js_extract1_pattern": "FX_redirect[.]0[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract1_default": "",
+    "js_extract2_var": "user_mac",
+    "js_extract2_pattern": "FX_redirect[.]1[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract2_default": "",
+    "js_extract3_var": "login_url",
+    "js_extract3_pattern": "FX_redirect[.]2[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract3_default": "",
+    "submit_url": "https://start.cloudwifi.de?ros_mac=${device_mac}&ros_user_mac=${user_mac}&ros_login_url=${login_url}",
+    "submit_method": "GET",
+    "submit_data": "",
+    "submit_content_type": "application/x-www-form-urlencoded",
+    "success_check": "empty_body"
+  }
+}

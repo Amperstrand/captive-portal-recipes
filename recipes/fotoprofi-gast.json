@@ -1,0 +1,28 @@
+{
+  "id": "fotoprofi-gast",
+  "name": "FotoProfi Guest WiFi",
+  "travelmate_domain": "fotoprofi.local",
+  "fallback_domains": [],
+  "auth_type": "multipart-post",
+  "credentials": "none",
+  "match": {
+    "ssids": ["Fotoprofi-Gast"],
+    "domains": [],
+    "paths": ["/index.shtml"],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "form_page_url": "${trm_captiveurl}",
+    "submit_url": "http://${trm_domain}/wgcgi.cgi",
+    "field1_name": "redirect",
+    "field1_value": "",
+    "field1_source": "hidden",
+    "field1_extract": "name=\"redirect\"[^>]*value=\"([^\"]+)\"",
+    "field2_name": "username",
+    "field2_value": "guest",
+    "field2_source": "static",
+    "success_check": "contains_string",
+    "success_string": "success"
+  }
+}

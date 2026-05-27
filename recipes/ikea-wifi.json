@@ -1,0 +1,30 @@
+{
+  "id": "ikea-wifi",
+  "name": "IKEA WiFi",
+  "travelmate_domain": "yo-wifi.net",
+  "fallback_domains": [],
+  "auth_type": "multi-api",
+  "credentials": "none",
+  "match": {
+    "ssids": ["IKEA WiFi"],
+    "domains": ["yo-wifi.net"],
+    "paths": ["/authen"],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "step1_url": "${trm_captiveurl}",
+    "step1_name": "fetch initial redirect",
+    "step1_type": "redirect",
+    "step2_url": "http://${trm_domain}/login/tc?client_id=1&save_mac=false&user_type=9",
+    "step2_name": "terms acceptance",
+    "step2_type": "fetch",
+    "step2_method": "POST",
+    "step2_extract": "realm:@.payload.realm|username:@.payload.username|password:@.payload.password",
+    "step3_url": "http://${trm_domain}/authen/login/?userid=${realm}1%5C${username}%5C9&password=${password}",
+    "step3_name": "authenticate with credentials",
+    "step3_type": "fetch",
+    "step3_method": "GET",
+    "success_check": "empty_body"
+  }
+}

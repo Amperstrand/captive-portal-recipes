@@ -1,0 +1,34 @@
+{
+  "id": "conn4-rewe",
+  "name": "Conn4 (REWE WiFi)",
+  "travelmate_domain": "hotspot.conn4.com",
+  "fallback_domains": [],
+  "auth_type": "multi-api",
+  "credentials": "none",
+  "match": {
+    "ssids": ["-REWE gratis WLAN-"],
+    "domains": ["conn4.com"],
+    "paths": ["/ident"],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "success_check": "json_true",
+    "step1_url": "${trm_captiveurl}",
+    "step1_name": "fetch portal page",
+    "step1_type": "fetch",
+    "step1_extract": "wbs_token:{sub(/.*wbsToken=/,\"\",$0);sub(/&.*/,\"\",$0);print}",
+    "step2_url": "http://${trm_domain}/api/scenes?token=${wbs_token}",
+    "step2_name": "fetch available tariffs",
+    "step2_type": "fetch",
+    "step2_extract": "tariff_list:{$0=$0;print}",
+    "step3_url": "http://${trm_domain}/api/register",
+    "step3_name": "register with tariff",
+    "step3_type": "foreach",
+    "step3_foreach_in": "tariff_list",
+    "step3_foreach_as": "tariff_item",
+    "step3_foreach_until_success": "true",
+    "step3_method": "POST",
+    "step3_data": "tariff=${tariff_item}&token=${wbs_token}"
+  }
+}

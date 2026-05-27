@@ -72,6 +72,8 @@ detect_auth_type() {
 	_name="$(head -2 "${_script}" | grep -o 'for [^(]*' | sed 's/for //')"
 	if grep -q 'hexMD5' "${_script}" 2>/dev/null; then
 		echo "chap-md5"
+	elif grep -q 'jwt_token\|openssl dgst -sha256 -hmac' "${_script}" 2>/dev/null; then
+		echo "jwt-sign"
 	elif grep -q 'window\.location\|location\.replace\|location\.href' "${_script}" 2>/dev/null; then
 		echo "js-redirect"
 	elif grep -q 'base_grant_url\|%%GRANT_URL_PARAM%%' "${_script}" 2>/dev/null || grep -q 'write-out.*redirect_url' "${_script}" 2>/dev/null; then
@@ -87,7 +89,15 @@ detect_auth_type() {
 			echo "cookie-chain"
 		fi
 	elif grep -q 'trm_jsoncmd\|jsonfilter' "${_script}" 2>/dev/null; then
-		echo "json-api"
+		if grep -q '_fe_success\|foreach.*read -r' "${_script}" 2>/dev/null; then
+			echo "multi-api"
+		else
+			echo "json-api"
+		fi
+	elif grep -q '\-\-form-string' "${_script}" 2>/dev/null; then
+		echo "multipart-post"
+	elif grep -q 'sed -nE.*\\1/p' "${_script}" 2>/dev/null; then
+		echo "js-parse"
 	elif grep -q 'form_html\|hidden_fields' "${_script}" 2>/dev/null; then
 		echo "form-submit"
 	else

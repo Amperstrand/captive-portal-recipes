@@ -1,0 +1,34 @@
+{
+  "id": "socialwave-wifi",
+  "name": "SocialWave FreeWiFi",
+  "travelmate_domain": "go.social-wave.com",
+  "fallback_domains": ["go.meinwlan.com"],
+  "auth_type": "multi-api",
+  "credentials": "none",
+  "match": {
+    "ssids": ["FreeWiFi 24 Autohof Mühldorf", "FreeWiFi Burger King", "FreeWiFi Teufel", "WienerRiesenrad"],
+    "domains": ["go.social-wave.com", "go.meinwlan.com"],
+    "paths": [],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "step1_url": "${trm_captiveurl}",
+    "step1_name": "fetch splash page",
+    "step1_type": "fetch",
+    "step1_extract": "res_query:match($0,/res=([^&\"[:space:]]+)/){val=substr($0,RSTART+4,RLENGTH-5);print val;exit}",
+    "step2_url": "https://splash-api.daisy.meinwlan.com/api/hello.json?query=${res_query}",
+    "step2_name": "fetch hello config",
+    "step2_type": "fetch",
+    "step3_url": "https://splash-api.daisy.meinwlan.com/api/email/register.json",
+    "step3_name": "register with email",
+    "step3_type": "fetch",
+    "step3_method": "POST",
+    "step3_data": "language=de&agree_terms=true&agree_marketing=true&query=${res_query}",
+    "step3_extract": "auth_token:@.AuthenticationToken",
+    "step4_url": "http://${trm_domain}/nodogsplash_auth_tok/?token=${auth_token}",
+    "step4_name": "authenticate on router",
+    "step4_type": "fetch",
+    "success_check": "empty_body"
+  }
+}

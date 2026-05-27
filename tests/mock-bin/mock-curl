@@ -25,6 +25,7 @@ while [ $# -gt 0 ]; do
 		--cookie) shift 2 ;;
 		--output) OUTPUT_FILE="$2"; shift 2 ;;
 		--data) DATA="$2"; IS_POST=1; shift 2 ;;
+		--form-string) shift 2; IS_POST=1 ;;
 		--header) shift 2 ;;
 		--referer) shift 2 ;;
 		--user-agent) shift 2 ;;
@@ -124,6 +125,34 @@ elif [ ${IS_POST} = 1 ]; then
 				BODY='online'
 			fi
 			;;
+		# Multipart-post: fotoprofi-gast
+		fotoprofi-gast)
+			BODY='success'
+			;;
+		# Multi-api: conn4-rewe POST register
+		conn4-rewe)
+			BODY='{"success":true}'
+			;;
+		# Multi-api: socialwave-wifi POST register
+		socialwave-wifi)
+			BODY='{"AuthenticationToken":"test_token_abc"}'
+			;;
+		# js-parse: carglass-gast POST form
+		carglass-gast)
+			BODY=''
+			;;
+		# js-parse: fortinet-fgtauth POST form
+		fortinet-fgtauth)
+			BODY=''
+			;;
+		# multi-api: socialwibox POST redirectPost
+		socialwibox)
+			BODY=''
+			;;
+		# multi-api: ikea-wifi POST terms
+		ikea-wifi)
+			BODY=''
+			;;
 		# Default: empty body (for empty_body success check)
 		*)
 			BODY=''
@@ -158,6 +187,82 @@ else
 		# Multi-step-form: return HTML forms for step GETs (calls 0, 2, 4)
 		accor-hotels)
 			BODY='<html><body><form action="/step"><input type="hidden" name="token" value="abc123"></form></body></html>'
+			;;
+		# js-parse: blockhouse-wifi GET returns JS with variables, POST returns empty
+		blockhouse-wifi)
+			if [ ${COUNT} = 0 ]; then
+				BODY='<html><script>var postToUrl = "/submit"; var port = "8080";</script></html>'
+			else
+				BODY=''
+			fi
+			;;
+		# Multi-api: conn4-rewe - 3 calls (GET portal, GET scenes, POST register)
+		conn4-rewe)
+			case ${COUNT} in
+				0) BODY='wbsToken=test_token_123&other=data' ;;
+				1) BODY='tariff_free
+tariff_premium' ;;
+				2) BODY='{"success":true}' ;;
+			esac
+			;;
+		# jwt-sign: abercrombie-wifi GET returns success response
+		abercrombie-wifi)
+			BODY='success'
+			;;
+		# js-parse: carglass-gast - returns JS with redirURL
+		carglass-gast)
+			if [ ${COUNT} = 0 ]; then
+				BODY='<html><head><title>REDIR</title></head><body><script>var redirURL = "https://portal.carglass.de/auth";</script></body></html>'
+			else
+				BODY=''
+			fi
+			;;
+		# js-parse: fortinet-fgtauth - returns JS with window.location
+		fortinet-fgtauth)
+			if [ ${COUNT} = 0 ]; then
+				BODY='<html><body><script>window.location = "https://portal.fortinet.net/fgtauth?answer=1";</script></body></html>'
+			else
+				BODY=''
+			fi
+			;;
+		# js-parse: cloudwifi-redirect - returns JS with FX_redirect vars
+		cloudwifi-redirect)
+			if [ ${COUNT} = 0 ]; then
+				BODY='<html><body><script>var FX_redirect = new Array(); FX_redirect.0 = "AA:BB:CC:DD:EE:FF"; FX_redirect.1 = "11:22:33:44:55:66"; FX_redirect.2 = "https://start.cloudwifi.de/login";</script></body></html>'
+			else
+				BODY=''
+			fi
+			;;
+		# multi-api: socialwibox - returns forms for multi-step
+		socialwibox)
+			case ${COUNT} in
+				0) BODY='<html><body><form name="redirect" action="/step1"><input name="token" value="abc"><input type="submit"></form></body></html>' ;;
+				1) BODY='<html><body><footer><span class="links-foot"><a href="/terms">Terms</a></span></footer></body></html>' ;;
+				2) BODY='<html><body><script>function redirectPost() { redirectPost("https://portal.socialwibox.com/auth", {"token":"xyz"}); }</script></body></html>' ;;
+				3) BODY='<html><body><form action="/final"><input name="session" value="final_session"></form></body></html>' ;;
+				*) BODY='' ;;
+			esac
+			;;
+		# multi-api: ikea-wifi - redirect + JSON credentials
+		ikea-wifi)
+			case ${COUNT} in
+				0) BODY='' ;; # redirect
+				1) BODY='{"payload":{"realm":"ikea","username":"user123","password":"pass456"}}' ;;
+				*) BODY='' ;;
+			esac
+			;;
+		# multi-api: socialwave-wifi - multi-step API calls
+		socialwave-wifi)
+			case ${COUNT} in
+				0) BODY='res=notyet&auth=192.168.1.1' ;;
+				1) BODY='{"Settings":{"RedirectUrl":"https://example.com"}}' ;;
+				2) BODY='{"AuthenticationToken":"test_token_abc"}' ;;
+				*) BODY='' ;;
+			esac
+			;;
+		# Multipart-post: fotoprofi-gast returns HTML with hidden redirect field
+		fotoprofi-gast)
+			BODY='<html><body><form action="/wgcgi.cgi"><input type="hidden" name="redirect" value="http://original.url/"></form></body></html>'
 			;;
 		# JSON API: these start with POST, no initial GET
 		t-mobile-hotspot|targetbox|imaster-nce|unwired-graphql|commerzbank-wifi)

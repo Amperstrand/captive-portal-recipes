@@ -1,0 +1,26 @@
+{
+  "id": "fortinet-fgtauth",
+  "name": "FortiAuthenticator (Fortinet Portal)",
+  "travelmate_domain": "captive.portal",
+  "fallback_domains": [],
+  "auth_type": "js-parse",
+  "credentials": "none",
+  "match": {
+    "ssids": ["ITS - FREEWIFI", "Douglas Guest"],
+    "domains": [],
+    "paths": ["/fgtauth"],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "js_page_url": "${trm_captiveurl}",
+    "js_extract1_var": "redirect_url",
+    "js_extract1_pattern": "window[.]location[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract1_default": "",
+    "submit_url": "${redirect_url}",
+    "submit_method": "POST",
+    "submit_data": "answer=1",
+    "submit_content_type": "application/x-www-form-urlencoded",
+    "success_check": "empty_body"
+  }
+}

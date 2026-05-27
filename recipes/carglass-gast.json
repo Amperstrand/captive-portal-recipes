@@ -1,0 +1,26 @@
+{
+  "id": "carglass-gast",
+  "name": "Carglass Guest WiFi",
+  "travelmate_domain": "captive.carglass.de",
+  "fallback_domains": [],
+  "auth_type": "js-parse",
+  "credentials": "none",
+  "match": {
+    "ssids": ["NEU_Carglass-Gast-Zugang"],
+    "domains": ["captive.carglass.de"],
+    "paths": ["/reg.php"],
+    "body_contains": [],
+    "priority": 70
+  },
+  "params": {
+    "js_page_url": "${trm_captiveurl}",
+    "js_extract1_var": "redir_url",
+    "js_extract1_pattern": "redirURL[[:space:]]*=[[:space:]]*\"([^\"]+)\"",
+    "js_extract1_default": "",
+    "submit_url": "${redir_url}",
+    "submit_method": "POST",
+    "submit_data": "url=${trm_captiveurl}&checkbox=checkbox",
+    "submit_content_type": "application/x-www-form-urlencoded",
+    "success_check": "empty_body"
+  }
+}

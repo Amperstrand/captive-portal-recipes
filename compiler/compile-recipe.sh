@@ -232,6 +232,8 @@ gen_awk_extracts() {
 	_ea_prefix="$4"
 	[ -z "${_ea_spec}" ] && return
 	_oldifs="${IFS}"; IFS=','
+	_oldglob="$(set +o | grep noglob)" 2>/dev/null || true
+	set -f
 	for _ext in ${_ea_spec}; do
 		_varname="${_ext%%:*}"; _awk_code="${_ext#*:}"
 		[ -z "${_varname}" ] || [ -z "${_awk_code}" ] && continue
@@ -244,6 +246,8 @@ AWKEXTEOF
 		marker_subst "__EXT_AWK__" "${_awk_code}" "${_ext_tmp}"
 		cat "${_ext_tmp}" >> "${_ea_outfile}"
 	done
+	set +f
+	eval "${_oldglob}" 2>/dev/null || true
 	IFS="${_oldifs}"
 }
 
@@ -256,6 +260,8 @@ gen_json_extracts() {
 	_ej_prefix="$4"
 	[ -z "${_ej_spec}" ] && return
 	_oldifs="${IFS}"; IFS=','
+	_oldglob="$(set +o | grep noglob)" 2>/dev/null || true
+	set -f
 	for _ext in ${_ej_spec}; do
 		_varname="${_ext%%:*}"; _jsonpath="${_ext#*:}"
 		[ -z "${_varname}" ] || [ -z "${_jsonpath}" ] && continue
@@ -268,6 +274,8 @@ JSONEXTEOF
 		marker_subst "__EXT_JSON__" "${_jsonpath}" "${_ext_tmp}"
 		cat "${_ext_tmp}" >> "${_ej_outfile}"
 	done
+	set +f
+	eval "${_oldglob}" 2>/dev/null || true
 	IFS="${_oldifs}"
 }
 
@@ -588,6 +596,167 @@ compile_json_api() {
 	apply_common_finish
 }
 
+# ── Multi-API step code generator (extends json-api with foreach) ────
+gen_multi_api_steps() {
+	_tmpfile="${SUBST_DIR}/multi_api_steps_tmp"
+	> "${_tmpfile}"
+	_step=1
+	while true; do
+		_step_url="$(json_get_nested "params.step${_step}_url" 2>/dev/null || true)"
+		[ -z "${_step_url}" ] && break
+		_step_method="$(json_get_nested "params.step${_step}_method" 2>/dev/null || echo "GET")"
+		_step_name="$(json_get_nested "params.step${_step}_name" 2>/dev/null || echo "step ${_step}")"
+		_step_type="$(json_get_nested "params.step${_step}_type" 2>/dev/null || echo "fetch")"
+		_step_referer="$(json_get_nested "params.step${_step}_referer" 2>/dev/null || true)"
+		_step_data="$(json_get_nested "params.step${_step}_data" 2>/dev/null || true)"
+		_step_extract="$(json_get_nested "params.step${_step}_extract" 2>/dev/null || true)"
+		_step_required="$(json_get_nested "params.step${_step}_required" 2>/dev/null || true)"
+
+		_step_tmp="${SUBST_DIR}/mastep_${_step}_tmp"
+
+		case "${_step_type}" in
+		redirect)
+			_opts_markers='${trm_fetchparm} --user-agent "${trm_useragent}" --write-out "%{redirect_url}" --output /dev/null'
+			[ -n "${_step_referer}" ] && _opts_markers="${_opts_markers} --referer \"${_step_referer}\""
+			cat << 'STEPEOF' > "${_step_tmp}"
+# __STEP_NAME__
+#
+redirect_url="$("${trm_fetch}" __STEP_OPTS__ "__STEP_URL__")"
+STEPEOF
+			marker_subst "__STEP_NAME__" "${_step_name}" "${_step_tmp}"
+			marker_subst "__STEP_OPTS__" "${_opts_markers}" "${_step_tmp}"
+			marker_subst "__STEP_URL__" "${_step_url}" "${_step_tmp}"
+			cat "${_step_tmp}" >> "${_tmpfile}"
+
+			if [ -n "${_step_extract}" ]; then
+				gen_awk_extracts "${_step_extract}" "redirect_url" "${_tmpfile}" "mext_${_step}"
+			fi
+			;;
+		foreach)
+			_fe_in="$(json_get_nested "params.step${_step}_foreach_in" 2>/dev/null || true)"
+			_fe_as="$(json_get_nested "params.step${_step}_foreach_as" 2>/dev/null || echo "item")"
+			_fe_until="$(json_get_nested "params.step${_step}_foreach_until_success" 2>/dev/null || echo "false")"
+			_fe_referer="${_step_referer}"
+			_fe_data="${_step_data}"
+
+			# Build fetch options for inside the loop
+			_fe_opts='${trm_fetchparm} --user-agent "${trm_useragent}"'
+			[ -n "${_fe_referer}" ] && _fe_opts="${_fe_opts} --referer \"${_fe_referer}\""
+			[ "${_step_method}" = "POST" ] && [ -n "${_fe_data}" ] && _fe_opts="${_fe_opts} --data \"${_fe_data}\""
+
+			# Generate the foreach loop header
+			cat << 'FEEOF' > "${_step_tmp}"
+# __STEP_NAME__ (foreach: try each __FE_AS__)
+_fe_success=1
+echo "${__FE_IN__}" | while IFS= read -r __FE_AS__; do
+	[ -z "${__FE_AS__}" ] && continue
+	raw_html="$("${trm_fetch}" __FE_OPTS__ "__STEP_URL__")"
+FEEOF
+			marker_subst "__STEP_NAME__" "${_step_name}" "${_step_tmp}"
+			marker_subst "__FE_IN__" "${_fe_in}" "${_step_tmp}"
+			marker_subst "__FE_AS__" "${_fe_as}" "${_step_tmp}"
+			marker_subst "__FE_OPTS__" "${_fe_opts}" "${_step_tmp}"
+			marker_subst "__STEP_URL__" "${_step_url}" "${_step_tmp}"
+			cat "${_step_tmp}" >> "${_tmpfile}"
+
+			# Extract inside the loop body (if any)
+			if [ -n "${_step_extract}" ]; then
+				gen_json_extracts "${_step_extract}" "raw_html" "${_tmpfile}" "mfext_${_step}"
+			fi
+
+			# Generate loop success check and footer
+			if [ "${_fe_until}" = "true" ]; then
+				# Use gen_success_check logic inline for the check
+				_check="$(json_get_nested "params.success_check" 2>/dev/null || echo "empty_body")"
+				case "${_check}" in
+					json_true)
+						cat << 'CHECKEOF' >> "${_tmpfile}"
+	_result="$(printf "%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '@.success')"
+	[ "${_result}" = "true" ] && exit 0
+CHECKEOF
+						;;
+					empty_body)
+						echo '	[ -z "${raw_html}" ] && exit 0' >> "${_tmpfile}"
+						;;
+					contains_string)
+						_str="$(json_get_nested "params.success_string" 2>/dev/null || echo "success")"
+						printf '\tprintf "%%s" "${raw_html}" 2>/dev/null | grep -q "%s" && exit 0\n' "${_str}" >> "${_tmpfile}"
+						;;
+					json_not_null)
+						_field="$(json_get_nested "params.success_field" 2>/dev/null || echo "session")"
+						printf '\t_result="$(printf "%%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '"'"'@.%s'"'"')"\n' "${_field}" >> "${_tmpfile}"
+						echo '	[ -n "${_result}" ] && exit 0' >> "${_tmpfile}"
+						;;
+					*)
+						echo '	[ -z "${raw_html}" ] && exit 0' >> "${_tmpfile}"
+						;;
+				esac
+			fi
+
+			echo "done" >> "${_tmpfile}"
+			echo "_fe_success=\$?" >> "${_tmpfile}"
+			echo '[ "${_fe_success}" = "0" ] || exit 5' >> "${_tmpfile}"
+			touch "${SUBST_DIR}/multi_api_foreach_flag"
+			;;
+		*)
+			_opts_markers='${trm_fetchparm} --user-agent "${trm_useragent}"'
+			[ -n "${_step_referer}" ] && _opts_markers="${_opts_markers} --referer \"${_step_referer}\""
+			[ "${_step_method}" = "POST" ] && [ -n "${_step_data}" ] && _opts_markers="${_opts_markers} --data \"${_step_data}\""
+
+			cat << 'STEPEOF' > "${_step_tmp}"
+# __STEP_NAME__
+raw_html="$("${trm_fetch}" __STEP_OPTS__ "__STEP_URL__")"
+STEPEOF
+			marker_subst "__STEP_NAME__" "${_step_name}" "${_step_tmp}"
+			marker_subst "__STEP_OPTS__" "${_opts_markers}" "${_step_tmp}"
+			marker_subst "__STEP_URL__" "${_step_url}" "${_step_tmp}"
+			cat "${_step_tmp}" >> "${_tmpfile}"
+
+			if [ -n "${_step_extract}" ]; then
+				_ma_oldifs="${IFS}"; IFS='|'
+				set -f
+				for _ma_ext in ${_step_extract}; do
+					_ma_vn="${_ma_ext%%:*}"
+					_ma_code="${_ma_ext#*:}"
+					[ -z "${_ma_vn}" ] || [ -z "${_ma_code}" ] && continue
+					_ma_ext_tmp="${SUBST_DIR}/maext_${_step}_${_ma_vn}"
+					if [ "${_ma_code#\@}" != "${_ma_code}" ]; then
+						printf '%s="$(printf "%%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '"'"'%s'"'"')"\n' "${_ma_vn}" "${_ma_code}" > "${_ma_ext_tmp}"
+					else
+						printf '%s="$(printf "%%s" "${raw_html}" 2>/dev/null | "${trm_awkcmd}" '"'"'%s'"'"')"\n' "${_ma_vn}" "${_ma_code}" > "${_ma_ext_tmp}"
+					fi
+					cat "${_ma_ext_tmp}" >> "${_tmpfile}"
+				done
+				set +f
+				IFS="${_ma_oldifs}"
+			fi
+			;;
+		esac
+
+		if [ -n "${_step_required}" ]; then
+			printf '[ -z "${%s}" ] && exit %d\n' "${_step_required}" "${_step}" >> "${_tmpfile}"
+		fi
+		_step=$((_step + 1))
+	done
+	printf '%s' "${_tmpfile}"
+}
+
+compile_multi_api() {
+	_multi_api_foreach_flag=""
+	rm -f "${SUBST_DIR}/multi_api_foreach_flag"
+	_steps_tmp="$(gen_multi_api_steps)"
+	[ -f "${SUBST_DIR}/multi_api_foreach_flag" ] && _multi_api_foreach_flag=1
+
+	subst_common
+	subst_file "%%STEPS%%" "${_steps_tmp}"
+	if [ -n "${_multi_api_foreach_flag}" ]; then
+		subst "%%SUCCESS_CHECK%%	exit 0"
+	else
+		subst "%%SUCCESS_CHECK%%	$(gen_success_check)"
+	fi
+	apply_substs
+}
+
 compile_chap_md5() {
 	_chap_detect="$(json_get_nested "params.chap_detect" 2>/dev/null || echo "chap-challenge")"
 	_form_action="$(json_get_nested "params.form_action" 2>/dev/null || echo 'http://${trm_domain}/login')"
@@ -727,11 +896,139 @@ FOLLEOF
 	apply_common_finish
 }
 
+compile_js_parse() {
+	_page_url="$(json_get_nested "params.js_page_url" 2>/dev/null || echo '${trm_captiveurl}')"
+	_submit_url="$(json_get_nested "params.submit_url" 2>/dev/null || echo 'http://${trm_domain}')"
+	_submit_method="$(json_get_nested "params.submit_method" 2>/dev/null || echo "POST")"
+	_submit_data="$(json_get_nested "params.submit_data" 2>/dev/null || true)"
+	_submit_content_type="$(json_get_nested "params.submit_content_type" 2>/dev/null || echo "application/x-www-form-urlencoded")"
+	_submit_extra_headers="$(json_get_nested "params.submit_extra_headers" 2>/dev/null || true)"
+
+	# Generate extraction steps
+	_ext_tmp="${SUBST_DIR}/js_parse_steps_tmp"
+	> "${_ext_tmp}"
+	_ext_num=1
+	while true; do
+		_ext_var="$(json_get_nested "params.js_extract${_ext_num}_var" 2>/dev/null || true)"
+		[ -z "${_ext_var}" ] && break
+		_ext_pattern="$(json_get_nested "params.js_extract${_ext_num}_pattern" 2>/dev/null || true)"
+		_ext_default="$(json_get_nested "params.js_extract${_ext_num}_default" 2>/dev/null || true)"
+
+		_ext_step_tmp="${SUBST_DIR}/js_parse_ext_${_ext_num}"
+		cat > "${_ext_step_tmp}" << 'EXTEOF'
+__EXT_VAR__="$(printf "%s" "${raw_html}" | sed -nE 's/.*__EXT_PATTERN__.*/\1/p' | head -1)"
+EXTEOF
+		if [ -n "${_ext_default}" ]; then
+			printf '[ -z "${__EXT_VAR__}" ] && __EXT_VAR__="__EXT_DEFAULT__"\n' >> "${_ext_step_tmp}"
+		else
+			printf '[ -z "${__EXT_VAR__}" ] && exit __EXT_EXIT__\n' >> "${_ext_step_tmp}"
+		fi
+
+		marker_subst "__EXT_VAR__" "${_ext_var}" "${_ext_step_tmp}"
+		marker_subst "__EXT_PATTERN__" "${_ext_pattern}" "${_ext_step_tmp}"
+		if [ -n "${_ext_default}" ]; then
+			marker_subst "__EXT_DEFAULT__" "${_ext_default}" "${_ext_step_tmp}"
+		else
+			marker_subst "__EXT_EXIT__" "$((_ext_num + 1))" "${_ext_step_tmp}"
+		fi
+
+		cat "${_ext_step_tmp}" >> "${_ext_tmp}"
+		_ext_num=$((_ext_num + 1))
+	done
+
+	# Generate submit action
+	_submit_tmp="${SUBST_DIR}/js_parse_submit_tmp"
+	_opts='${trm_fetchparm} --user-agent "${trm_useragent}"'
+	if [ "${_submit_method}" = "POST" ]; then
+		_opts="${_opts} --header \"Content-Type:${_submit_content_type}\""
+		[ -n "${_submit_data}" ] && _opts="${_opts} --data \"${_submit_data}\""
+	fi
+	[ -n "${_submit_extra_headers}" ] && _opts="${_opts} --header \"${_submit_extra_headers}\""
+
+	cat > "${_submit_tmp}" << 'SUBMITEOF'
+raw_html="$("${trm_fetch}" __SUBMIT_OPTS__ "__SUBMIT_URL__")"
+SUBMITEOF
+	marker_subst "__SUBMIT_OPTS__" "${_opts}" "${_submit_tmp}"
+	marker_subst "__SUBMIT_URL__" "${_submit_url}" "${_submit_tmp}"
+
+	subst_common
+	subst "%%JS_PAGE_URL%%	${_page_url}"
+	subst_file "%%JS_PARSE_STEPS%%" "${_ext_tmp}"
+	subst_file "%%SUBMIT_ACTION%%" "${_submit_tmp}"
+	apply_common_finish
+}
+
 compile_multi_step_form() {
 	_steps_tmp="$(gen_multi_step_form_steps)"
 
 	subst_common
 	subst_file "%%STEPS%%" "${_steps_tmp}"
+	apply_common_finish
+}
+
+compile_multipart_post() {
+	_form_page_url="$(json_get_nested "params.form_page_url" 2>/dev/null || echo '${trm_captiveurl}')"
+	_submit_url="$(json_get_nested "params.submit_url" 2>/dev/null || echo 'http://${trm_domain}')"
+	_extra_form_fields="$(json_get_nested "params.extra_form_fields" 2>/dev/null || true)"
+
+	# Generate hidden field extraction code
+	_extract_tmp="${SUBST_DIR}/multipart_extract_tmp"
+	> "${_extract_tmp}"
+	_field_num=1
+	while true; do
+		_field_name="$(json_get_nested "params.field${_field_num}_name" 2>/dev/null || true)"
+		[ -z "${_field_name}" ] && break
+		_field_source="$(json_get_nested "params.field${_field_num}_source" 2>/dev/null || echo "static")"
+
+		case "${_field_source}" in
+			hidden)
+				_extract_pattern="$(json_get_nested "params.field${_field_num}_extract" 2>/dev/null || true)"
+				if [ -n "${_extract_pattern}" ]; then
+					printf '%s="$(printf "%%s" "${raw_html}" | sed -nE '"'"'s/.*%s.*/\\1/p'"'"' | head -1)"\n' "${_field_name}" "${_extract_pattern}" >> "${_extract_tmp}"
+				fi
+				;;
+			extract)
+				_extract_pattern="$(json_get_nested "params.field${_field_num}_pattern" 2>/dev/null || true)"
+				if [ -n "${_extract_pattern}" ]; then
+					printf '%s="$(printf "%%s" "${raw_html}" | sed -nE '"'"'s/.*%s.*/\\1/p'"'"' | head -1)"\n' "${_field_name}" "${_extract_pattern}" >> "${_extract_tmp}"
+				fi
+				;;
+		esac
+		_field_num=$((_field_num + 1))
+	done
+
+	# Generate multipart submit command
+	_submit_tmp="${SUBST_DIR}/multipart_submit_tmp"
+	printf 'raw_html="$("${trm_fetch}" ${trm_fetchparm} --user-agent "${trm_useragent}"' > "${_submit_tmp}"
+
+	_field_num=1
+	while true; do
+		_field_name="$(json_get_nested "params.field${_field_num}_name" 2>/dev/null || true)"
+		[ -z "${_field_name}" ] && break
+		_field_value="$(json_get_nested "params.field${_field_num}_value" 2>/dev/null || true)"
+		_field_source="$(json_get_nested "params.field${_field_num}_source" 2>/dev/null || echo "static")"
+
+		case "${_field_source}" in
+			static)
+				printf ' \\\n  --form-string "%s=%s"' "${_field_name}" "${_field_value}" >> "${_submit_tmp}"
+				;;
+			hidden|extract)
+				printf ' \\\n  --form-string "%s=${%s}"' "${_field_name}" "${_field_name}" >> "${_submit_tmp}"
+				;;
+		esac
+		_field_num=$((_field_num + 1))
+	done
+
+	if [ -n "${_extra_form_fields}" ]; then
+		printf ' \\\n  %s' "${_extra_form_fields}" >> "${_submit_tmp}"
+	fi
+
+	printf ' \\\n  "%s")"\n' "${_submit_url}" >> "${_submit_tmp}"
+
+	subst_common
+	subst "%%FORM_PAGE_URL%%	${_form_page_url}"
+	subst_file "%%HIDDEN_FIELDS_EXTRACT%%" "${_extract_tmp}"
+	subst_file "%%MULTIPART_SUBMIT%%" "${_submit_tmp}"
 	apply_common_finish
 }
 
@@ -759,6 +1056,36 @@ compile_cookie_chain() {
 	apply_common_finish
 }
 
+compile_jwt_sign() {
+	_jwt_header="$(json_get_nested "params.jwt_header" 2>/dev/null || echo '{"alg":"HS256","typ":"JWT"}')"
+	_jwt_payload="$(json_get_nested "params.jwt_payload" 2>/dev/null || true)"
+	_jwt_secret="$(json_get_nested "params.jwt_secret" 2>/dev/null || true)"
+	_jwt_query_param="$(json_get_nested "params.jwt_query_param" 2>/dev/null || echo "jwt")"
+	_request_url="$(json_get_nested "params.request_url" 2>/dev/null || true)"
+	_request_method="$(json_get_nested "params.request_method" 2>/dev/null || echo "GET")"
+
+	# Build the auth request
+	_request_tmp="${SUBST_DIR}/jwt_request_tmp"
+	if [ "${_request_method}" = "POST" ]; then
+		_opts='${trm_fetchparm} --user-agent "${trm_useragent}" --header "Content-Type: application/json" --data "${jwt_token}"'
+	else
+		_opts='${trm_fetchparm} --user-agent "${trm_useragent}"'
+	fi
+
+	cat > "${_request_tmp}" << 'JWTEOF'
+raw_html="$("${trm_fetch}" __JWT_OPTS__ "__JWT_URL__")"
+JWTEOF
+	marker_subst "__JWT_OPTS__" "${_opts}" "${_request_tmp}"
+	marker_subst "__JWT_URL__" "${_request_url}" "${_request_tmp}"
+
+	subst_common
+	subst "%%JWT_HEADER%%	${_jwt_header}"
+	subst "%%JWT_PAYLOAD%%	${_jwt_payload}"
+	subst "%%JWT_SECRET%%	${_jwt_secret}"
+	subst_file "%%JWT_REQUEST%%" "${_request_tmp}"
+	apply_common_finish
+}
+
 # ── Dispatch ────────────────────────────────────────────────────────
 case "${auth_type}" in
 	click-through-grant) compile_click_through_grant ;;
@@ -767,8 +1094,12 @@ case "${auth_type}" in
 	json-api)            compile_json_api ;;
 	chap-md5)            compile_chap_md5 ;;
 	js-redirect)          compile_js_redirect ;;
+	js-parse)             compile_js_parse ;;
 	multi-step-form)      compile_multi_step_form ;;
+	multipart-post)       compile_multipart_post ;;
 	cookie-chain)         compile_cookie_chain ;;
+	jwt-sign)             compile_jwt_sign ;;
+	multi-api)            compile_multi_api ;;
 	*) echo "error: unknown auth_type '${auth_type}'" >&2; exit 1 ;;
 esac
 
