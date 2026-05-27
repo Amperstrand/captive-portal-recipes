@@ -12,7 +12,7 @@ The recipe compiler solves this by making portal definitions pure data. A contri
 
 ### Relationship to CaptivePortalAutoLogin
 
-[CaptivePortalAutoLogin](https://github.com/binarynoise/CaptivePortalAutoLogin) is an Android app with 46 Java handler classes, each automating a specific captive portal. We studied every handler to extract recurring patterns. The 8 auth types in this system were derived from that analysis. The `handlers-classification.md` file maps each of the 46 handlers to an auth type and notes whether it can be expressed as a recipe (30 can, 16 need custom code).
+[CaptivePortalAutoLogin](https://github.com/binarynoise/CaptivePortalAutoLogin) is an Android app with 46 Java handler classes, each automating a specific captive portal. We studied every handler to extract recurring patterns. The 12 auth types in this system were derived from that analysis. The `handlers-classification.md` file maps each of the 46 handlers to an auth type and notes whether it can be expressed as a recipe (40 can, 6 need custom code).
 
 ### Relationship to travelmate
 
@@ -41,14 +41,14 @@ The recipe compiler solves this by making portal definitions pure data. A contri
 
 The compiler supports multiple output targets. Each target has its own directory under `templates/targets/` containing shell templates tailored to that environment's conventions and available tools.
 
-**Current target:**
-- **travelmate** (`templates/targets/travelmate/`) — The first and primary target. Produces `.login` scripts that conform to travelmate's contract. These scripts source `travelmate-functions.sh`, use travelmate variables like `${trm_fetch}` and `${trm_domain}`, and run on OpenWrt with busybox tools.
+**Current targets:**
+- **travelmate** (`templates/targets/travelmate/`) — The primary target. Produces `.login` scripts that conform to travelmate's contract. These scripts source `travelmate-functions.sh`, use travelmate variables like `${trm_fetch}` and `${trm_domain}`, and run on OpenWrt with busybox tools.
+- **standalone** (`templates/targets/standalone/`) — Self-contained POSIX sh scripts that can run on any system with curl and awk. Uses a compatibility shim that maps travelmate variables to plain curl/awk equivalents. No WiFi manager integration required.
 
 **Future targets (planned):**
-- **standalone-shell** — Self-contained POSIX sh scripts that can run on any system with curl and awk, without requiring integration with a WiFi manager.
 - **networkmanager-dispatcher** — Scripts for NetworkManager's dispatcher system on Linux desktop systems.
 
-Adding a new target involves creating a new subdirectory under `templates/targets/` and providing templates for the 8 auth types that use the target's specific conventions and toolset.
+Adding a new target involves creating a new subdirectory under `templates/targets/` and providing templates for the 12 auth types that use the target's specific conventions and toolset.
 
 
 ### Three-layer separation
@@ -66,7 +66,7 @@ This separation means:
 
 ---
 
-## 3. The 8 Auth Types
+## 3. The 12 Auth Types
 
 | auth_type | Description | ~Prevalence | Template | Example Recipe |
 |---|---|---|---|---|
@@ -78,6 +78,10 @@ This separation means:
 | `js-redirect` | Extract JavaScript `window.location` redirect URL from body | ~5% | `js-redirect.sh.template` | `socialwifi.json` |
 | `multi-step-form` | Hotel/retail chains with multi-page form flows (3-5 steps) | ~5% | `multi-step-form.sh.template` | `accor-hotels.json` |
 | `cookie-chain` | PHP session portals requiring cookie jar management | ~5% | `cookie-chain.sh.template` | `wifipass.json` |
+| `js-parse` | Extract JS variables from HTML via POSIX ERE regex, then POST | ~3% | `js-parse.sh.template` | `blockhouse-wifi.json` |
+| `multipart-post` | Multipart/form-data POST using `curl --form-string` | ~1% | `multipart-post.sh.template` | `fotoprofi-gast.json` |
+| `multi-api` | Multi-step API calls with optional foreach loop for iteration | ~2% | `multi-api.sh.template` | `conn4-rewe.json` |
+| `jwt-sign` | HMAC-SHA256 JWT generation via openssl, then GET/POST with token | ~1% | `jwt-sign.sh.template` | `abercrombie-wifi.json` |
 
 ### Auth type details
 
@@ -183,36 +187,39 @@ Each target uses the same recipe format but produces scripts adapted to that env
 
 | Category | Count | Percentage |
 |---|---|---|
-| Covered by recipes | 30 | 65% |
-| Need custom code | 16 | 35% |
+| Covered by recipes | 40 | 87% |
+| Need custom code | 6 | 13% |
 
-The 16 handlers that need custom code fall into these categories:
+The 6 handlers that still need custom code fall into these categories:
 
-- **JWT generation** (Abercrombie): Requires HMAC-SHA256, not available in busybox.
-- **GraphQL APIs** (Unwired, SocialWave): Complex query construction with variable passing.
-- **Multipart form POST** (FotoProfi): busybox `curl` lacks `-F` support in all builds.
-- **Complex JavaScript parsing** (BlockHouse, ArubaNetworks): Requires extracting JS variable assignments and config objects.
-- **Multi-scene session management** (Conn4/REWE/Kaufland): 10+ request chains with conditional branching.
-- **ViewState forms** (Dokom21Hotspot): ASP.NET __VIEWSTATE extraction requires HTML parsing beyond awk.
+- **Complex JS parsing** (ArubaNetworks): Requires extracting large JSON config objects from inline script.
+- **Multi-scene session management** (Conn4 full complexity): 10+ request chains with conditional branching beyond what foreach supports.
+- **OAuth flows** (AenaES): Gigya registration with random email, token exchange, multi-scene navigation.
+- **ArubaClearPass variants** (Inditex, UrbanOutfitters, TallyWeijl): Multi-step submitOnlyForm chains with credential extraction.
+- **SocialwiBox full flow**: 5-step form chain with JS redirectPost parsing and JSON data extraction.
 
 ### Real-world coverage
 
-By frequency of encounter, the 30 covered handlers represent approximately 95% of real-world captive portal encounters. The uncovered handlers tend to be site-specific implementations (single retail chains) rather than widespread portal platforms. The Meraki, Fortinet, and generic form-submit templates alone cover the majority of portals worldwide.
+By frequency of encounter, the 40 covered handlers represent approximately 95% of real-world captive portal encounters. The uncovered handlers tend to be site-specific implementations (single retail chains) rather than widespread portal platforms. The Meraki, Fortinet, and generic form-submit templates alone cover the majority of portals worldwide.
 
 ### Recipe inventory
 
-44 recipe files across 8 auth types:
+54 recipe files across 12 auth types:
 
 | auth_type | Recipes |
 |---|---|
-| form-submit | 19 |
+| form-submit | 31 |
 | json-api | 6 |
-| multi-step-form | 5 |
-| click-through-grant | 4 |
-| csrf-form-submit | 3 |
-| cookie-chain | 3 |
+| multi-step-form | 2 |
+| js-parse | 4 |
+| multi-api | 3 |
+| click-through-grant | 1 |
+| csrf-form-submit | 1 |
 | chap-md5 | 2 |
-| js-redirect | 2 |
+| js-redirect | 1 |
+| cookie-chain | 1 |
+| multipart-post | 1 |
+| jwt-sign | 1 |
 
 ---
 
@@ -247,7 +254,7 @@ Run the full suite:
 
 ### CI
 
-Every push runs the full test suite via `.github/workflows/test.yml`. The pipeline compiles all 44 recipes and validates them against the mock environment. All 44 pass.
+Every push runs the full test suite via `.github/workflows/test.yml`. The pipeline compiles all 54 recipes and validates them against the mock environment. All 54 pass.
 
 ---
 
@@ -258,32 +265,38 @@ recipe-compiler/
 ├── ARCHITECTURE.md              # This document
 ├── COMPATIBILITY.md             # Recipe coverage and reliability matrix
 ├── ATTRIBUTION.md               # Credits and source attribution
-├── SCHEMA.md                    # Recipe JSON field definitions (135 lines)
-├── compile-recipe.sh            # The compiler (724 lines, sh+awk)
+├── SCHEMA.md                    # Recipe JSON field definitions
+├── compile-recipe.sh            # The compiler (1112 lines, sh+awk)
 ├── templates/                   # Target-specific shell templates
 │   └── targets/
-│       └── travelmate/          # Travelmate output target
-│           ├── click-through-grant.sh.template
-│           ├── form-submit.sh.template
-│           ├── csrf-form-submit.sh.template
-│           ├── json-api.sh.template
-│           ├── chap-md5.sh.template
-│           ├── js-redirect.sh.template
-│           ├── multi-step-form.sh.template
-│           └── cookie-chain.sh.template
-├── recipes/                     # 44 recipe JSON files
+│       ├── travelmate/          # Travelmate output target (12 templates)
+│       │   ├── click-through-grant.sh.template
+│       │   ├── form-submit.sh.template
+│       │   ├── csrf-form-submit.sh.template
+│       │   ├── json-api.sh.template
+│       │   ├── chap-md5.sh.template
+│       │   ├── js-redirect.sh.template
+│       │   ├── js-parse.sh.template
+│       │   ├── multipart-post.sh.template
+│       │   ├── multi-api.sh.template
+│       │   ├── jwt-sign.sh.template
+│       │   ├── multi-step-form.sh.template
+│       │   └── cookie-chain.sh.template
+│       └── standalone/          # Standalone shell target (12 templates)
+│           └── ... (same 12 auth types)
+├── recipes/                     # 54 recipe JSON files
 │   ├── cisco-meraki.json        # Meraki click-through
 │   ├── fortinet-clickthrough.json
 │   ├── wifibahn.json            # Deutsche Bahn WiFi
 │   ├── vodafone-de.json         # Vodafone hotspot (3-step JSON API)
 │   ├── mikrotik-chap.json       # MikroTik CHAP
-│   ├── socialwifi.json          # SocialWiBox JS redirect
-│   ├── accor-hotels.json        # Accor 3-step form
-│   ├── wifipass.json            # WiFiPass cookie chain
-│   ├── generic-form.json        # Generic form-submit
-│   └── ... (35 more)
+│   ├── blockhouse-wifi.json     # BlockHouse JS parse
+│   ├── conn4-rewe.json          # Conn4 multi-API
+│   ├── abercrombie-wifi.json    # Abercrombie JWT
+│   ├── fotoprofi-gast.json      # FotoProfi multipart
+│   └── ... (45 more)
 ├── tests/                       # Test infrastructure
-│   ├── test-recipes.sh          # Test runner (169 lines)
+│   ├── test-recipes.sh          # Test runner
 │   ├── mock-travelmate.sh       # Travelmate environment stubs
 │   └── mock-bin/                # Mock binaries
 │       ├── mock-curl            # Simulated HTTP client

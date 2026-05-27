@@ -1,6 +1,6 @@
 # Captive Portal Recipe Compatibility Matrix
 
-This document tracks recipe reliability, source attribution, and testing status for all 44 captive portal auto-login recipes. Each recipe is a JSON descriptor that tells the recipe compiler how to authenticate through a specific captive portal type without user interaction. Recipes are target-agnostic and can be compiled for multiple output platforms.
+This document tracks recipe reliability, source attribution, and testing status for all 54 captive portal auto-login recipes. Each recipe is a JSON descriptor that tells the recipe compiler how to authenticate through a specific captive portal type without user interaction. Recipes are target-agnostic and can be compiled for multiple output platforms.
 
 The matrix below serves as the single source of truth for:
 - Which real-world portals each recipe covers
@@ -57,6 +57,16 @@ The matrix below serves as the single source of truth for:
 | vodafone-de | json-api | VodafoneHotspot | manual-research | 🟡 MEDIUM | ✅ | | Complex multi-step JSON API: redirect → extract SID → session → login; requires credentials |
 | wifibahn | csrf-form-submit | DBWifi | manual-research | 🟢 HIGH | ✅ | | Well-tested DB WiFi/ICE CSRF pattern; cookie-based token extraction |
 | wifipass | cookie-chain | manual | manual-research | 🔴 LOW | ✅ | | Speculative cookie-chain template for wifipass.org; new auth_type, unverified on real portal |
+| abercrombie-wifi | jwt-sign | Abercrombie | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | JWT HMAC-SHA256 via openssl; requires openssl on target device |
+| blockhouse-wifi | js-parse | BlockHouse | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Extracts postToUrl and port from JS, constructs POST with timestamp |
+| carglass-gast | js-parse | Carglass | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Extracts redirURL from JS, POSTs form with checkbox |
+| cloudwifi-redirect | js-parse | CloudWifiRedirect | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Extracts FX_redirect vars (deviceMac, userMac, loginUrl) from JS |
+| conn4-rewe | multi-api | Conn4 | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Simplified from complex multi-scene flow; foreach tariff registration |
+| fortinet-fgtauth | js-parse | FortiAuthenticator | CaptivePortalAutoLogin | 🟢 HIGH | ✅ | | Parses window.location from JS for FortiAuth redirect, then form submit |
+| fotoprofi-gast | multipart-post | FotoProfi | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Multipart form POST with extracted hidden fields via --form-string |
+| ikea-wifi | multi-api | IKEA | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Multi-step: redirect + token + JSON credential extraction + auth |
+| socialwave-wifi | multi-api | SocialWave | CaptivePortalAutoLogin | 🟡 MEDIUM | ✅ | | Multi-step API: hello.json + email register + router auth |
+| socialwibox | multi-step-form | SocialwiBox | CaptivePortalAutoLogin | 🔴 LOW | ✅ | | Simplified from 5-step chain; full handler needs JS redirectPost parsing |
 
 
 ## Coverage Summary
@@ -65,9 +75,9 @@ The matrix below serves as the single source of truth for:
 
 | Metric | Value |
 |--------|-------|
-| Total recipes | 44 |
-| Mock-tested | 44/44 |
-| Device-tested | 0/44 |
+| Total recipes | 54 |
+| Mock-tested | 54/54 |
+| Device-tested | 0/54 |
 
 ### By auth_type
 
@@ -78,32 +88,36 @@ The matrix below serves as the single source of truth for:
 | chap-md5 | 2 |
 | click-through-grant | 1 |
 | csrf-form-submit | 1 |
-| multi-step-form | 1 |
+| multi-step-form | 2 |
 | js-redirect | 1 |
 | cookie-chain | 1 |
-| **Total** | **44** |
+| js-parse | 4 |
+| multipart-post | 1 |
+| multi-api | 3 |
+| jwt-sign | 1 |
+| **Total** | **54** |
 
 ### By reliability
 
 | Level | Count | Percentage |
 |-------|-------|------------|
-| 🟢 HIGH | 27 | 61% |
-| 🟡 MEDIUM | 14 | 32% |
-| 🔴 LOW | 3 | 7% |
+| 🟢 HIGH | 28 | 52% |
+| 🟡 MEDIUM | 22 | 41% |
+| 🔴 LOW | 4 | 7% |
 | ⚪ UNTESTED | 0 | 0% |
-| **Total** | **44** | **100%** |
+| **Total** | **54** | **100%** |
 
 ### By source project
 
 | Source | Count | Description |
 |--------|-------|-------------|
-| CaptivePortalAutoLogin | 35 | Derived from handler source analysis |
-| manual-research | 9 | 6 pre-existing + 3 new template types |
+| CaptivePortalAutoLogin | 45 | Derived from handler source analysis |
+| manual-research | 9 | 9 manual recipes developed independently |
 
 
 ## Handlers Not Covered
 
-These 13 CaptivePortalAutoLogin handlers could not be expressed as JSON recipes because they require runtime logic that cannot be captured declaratively.
+These 6 CaptivePortalAutoLogin handlers could not be expressed as JSON recipes because they require runtime logic that cannot be captured declaratively.
 
 | Handler | Portal(s) | Why Custom Code Is Needed | Potential Future Approach |
 |---------|-----------|---------------------------|---------------------------|
@@ -112,13 +126,6 @@ These 13 CaptivePortalAutoLogin handlers could not be expressed as JSON recipes 
 | ArubaClearPass/UrbanOutfitters | register.urbn.com | Same ArubaClearPass pattern as Inditex | Same approach as Inditex |
 | ArubaClearPass/TallyWeijl | guestportal.tally-weijl.com | Same ArubaClearPass pattern as Inditex | Same approach as Inditex |
 | ArubaNetworks | \*.cloudguest.central.arubanetworks.com | Parse inline JS for config JSON, extract credentials, then Aruba auth | Scripted handler with JS evaluation or regex extraction |
-| BlockHouse | wlan.block-house.de | Parse JS to extract port/postToUrl, construct POST with timestamp | Extend form-submit with JS variable extraction capability |
-| Carglass | /reg.php (path-based) | JS redirect parsing + form POST with mandatory checkbox | Scripted handler for JS redirect following + conditional form fields |
-| Conn4 | \*.conn4.com | Extremely complex: multi-scene parsing, tariff selection, dual API styles (scene vs accor) | Full scripted handler; too many branches for declarative format |
-| FotoProfi | IP-based/index.shtml | Multipart form POST with dynamically extracted hidden fields | Extend form-submit with multipart encoding + dynamic field extraction |
-| IKEA | yo-wifi.net | Multi-step: follow redirects, POST for token, parse JSON for credentials, construct userid URL | Scripted handler with redirect following and JSON credential extraction |
-| Juniper/Abercrombie | storewifi.abercrombie.com | JWT token generation with HMAC-SHA256 signing | Scripted handler; requires crypto primitives not available in declarative format |
-| SocialWave | go.social-wave.com | External splash API with email registration, dual router auth (OpenWrt vs RouterOS) | Scripted handler with platform detection and router-specific auth |
 | SocialwiBox | hotspot.socialwibox.com | 5-step form chain with JS redirectPost parsing and JSONObject extraction | Scripted handler with JS parsing; simplified recipe exists but unreliable |
 
 
@@ -128,29 +135,24 @@ These 13 CaptivePortalAutoLogin handlers could not be expressed as JSON recipes 
 
 This recipe collection was built from three sources:
 
-**1. CaptivePortalAutoLogin handler analysis (35 recipes)**
+**1. CaptivePortalAutoLogin handler analysis (45 recipes)**
 
 The [CaptivePortalAutoLogin](https://github.com/binarynoise/CaptivePortalAutoLogin) project (GPL-3.0, by binarynoise) contains 46 Kotlin handlers for specific captive portals. We studied each handler's source code to understand portal behavior, authentication flows, and request patterns, then independently wrote equivalent JSON recipe descriptors. These recipes are target-agnostic and can be compiled for any supported platform.
 
 Recipes derived from handler analysis:
-- arista-clickthrough, alnatura-kundenwlan, binarynoise-proxy, cisco-ise-cwa, cisco-wireless-mobility, cloudifi, cloudwifi-milaneo, commerzbank-wifi, dertour-guest, dokom21-hotspot, dse-tech, fritzbox-guest, hotsplots, imaster-nce, intersport-kundenwlan, lancom-cloud, lego-store-guest, maxx-arena, messe-dresden, mist-portal, mypowerspot-de, nordsee-gast, picopoint-shell, primark-wifi, rhein-ruhr, ruby-hotels, ruby-workspaces, segmueller-hotspot, socialwifi, stadtwerke-stuttgart, t-mobile-hotspot, targetbox, the-cloud, uni-stuttgart-open, unifi-guest, unwired-graphql
+- abercrombie-wifi, alnatura-kundenwlan, arista-clickthrough, binarynoise-proxy, blockhouse-wifi, cisco-ise-cwa, cisco-wireless-mobility, cloudifi, cloudwifi-milaneo, cloudwifi-redirect, commerzbank-wifi, conn4-rewe, carglass-gast, dertour-guest, dokom21-hotspot, dse-tech, fortinet-fgtauth, fotoprofi-gast, fritzbox-guest, hotsplots, ikea-wifi, imaster-nce, intersport-kundenwlan, lancom-cloud, lego-store-guest, maxx-arena, messe-dresden, mist-portal, mypowerspot-de, nordsee-gast, picopoint-shell, primark-wifi, rhein-ruhr, ruby-hotels, ruby-workspaces, segmueller-hotspot, socialwifi, socialwave-wifi, socialwibox, stadtwerke-stuttgart, t-mobile-hotspot, targetbox, the-cloud, uni-stuttgart-open, unifi-guest, unwired-graphql
 
-**2. Pre-existing recipes from independent research (6 recipes)**
+**2. Manual recipes developed independently (9 recipes)**
 
-These recipes predate the CaptivePortalAutoLogin analysis and were developed independently:
+These recipes were developed independently from specific portal analysis:
 - cisco-meraki -- Cisco Meraki click-through grant URL pattern
 - fortinet-clickthrough -- Fortinet/FortiAuthenticator /fgtauth pattern
 - wifibahn -- Deutsche Bahn WiFi (csrf-form-submit)
 - vodafone-de -- Vodafone Hotspot (json-api)
 - mikrotik-chap -- MikroTik CHAP-MD5 (generic template)
 - generic-form -- Generic HTML form (universal fallback)
-
-**3. New template type recipes (3 recipes)**
-
-Created to exercise and validate new auth_type engines:
-- socialwifi -- js-redirect auth type validation
-- accor-hotels -- multi-step-form auth type validation
-- wifipass -- cookie-chain auth type validation
+- accor-hotels -- multi-step-form template for m3connect/Accor portals
+- wifipass -- cookie-chain template for wifipass.org
 
 ### License Note
 
