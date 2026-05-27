@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "js-parse",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "CloudWifiRedirect",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0",
+      "note": "Redirect variant of CloudWifi handler"
+    }
+  ],
   "match": {
     "ssids": ["-free Koenigsbau Passagen", "-Free -Thier Galerie Dortmund", "Radiologie-GAST"],
     "domains": ["start.cloudwifi.de"],

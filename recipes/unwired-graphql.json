@@ -2,22 +2,22 @@
   "id": "unwired-graphql",
   "name": "Unwired WiFi (AT Transit)",
   "travelmate_domain": "wasabi-splashpage.wifi.unwired.at",
-  "fallback_domains": [
-    "wasabi.hotspot-local.unwired.at"
-  ],
+  "fallback_domains": ["wasabi.hotspot-local.unwired.at"],
   "auth_type": "json-api",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "Unwired",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    }
+  ],
   "match": {
-    "ssids": [
-      "VIAS Free WiFi",
-      "arverio_freewifi",
-      "DonauparkCamping",
-      "Regio-S-Bahn WLAN",
-      "WestfalenBahn"
-    ],
-    "domains": [
-      "wasabi-splashpage.wifi.unwired.at"
-    ],
+    "ssids": ["VIAS Free WiFi", "arverio_freewifi", "DonauparkCamping", "Regio-S-Bahn WLAN", "WestfalenBahn"],
+    "domains": ["wasabi-splashpage.wifi.unwired.at"],
     "paths": [],
     "body_contains": [],
     "priority": 70

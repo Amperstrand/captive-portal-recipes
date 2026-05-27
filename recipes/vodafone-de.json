@@ -5,15 +5,19 @@
   "fallback_domains": [],
   "auth_type": "json-api",
   "credentials": "username_password",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "manual-research",
+      "handler": "VodafoneHotspot",
+      "license": "MIT",
+      "note": "Vodafone DE hotspot JSON API"
+    }
+  ],
   "match": {
-    "ssids": [
-      "@VodafoneWifi",
-      "Kunstmuseum WLAN",
-      "_free-wifi-stuttgart_(official)"
-    ],
-    "domains": [
-      "hotspot.vodafone.de"
-    ],
+    "ssids": ["@VodafoneWifi", "Kunstmuseum WLAN", "_free-wifi-stuttgart_(official)"],
+    "domains": ["hotspot.vodafone.de"],
     "paths": [],
     "body_contains": [],
     "priority": 80

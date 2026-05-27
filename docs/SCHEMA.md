@@ -29,8 +29,33 @@ Recipes are compiled into target-specific scripts (travelmate .login, standalone
 | `id` | string | Unique identifier (lowercase, hyphens) |
 | `name` | string | Human-readable name |
 | `travelmate_domain` | string | Primary domain for captive portal detection. Named for historical reasons; used by all compilation targets. |
- | `auth_type` | string | One of the 12 types above |
-| `credentials` | array | Which credentials are needed: `[]`, `["username"]`, `["username","password"]` |
+| `auth_type` | string | One of the 12 types above |
+| `credentials` | string | Which credentials are needed: `"none"`, `"username_password"`, `"username_only"`, `"password_only"` |
+| `version` | string | Semantic version of this recipe (e.g. `"1.0.0"`). Increment on any recipe change. |
+| `schema_version` | number | Recipe schema version this file conforms to. Current: `2`. |
+| `sources` | array | Array of source attribution objects (at least one required). See below. |
+
+### Source Attribution
+
+Each recipe must declare where its portal behavior was derived from. A recipe can have multiple sources when functionality overlaps between monitored projects.
+
+#### Source object fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `project` | string | yes | Source project: `"CaptivePortalAutoLogin"`, `"captive.d"`, `"manual-research"` |
+| `handler` | string | yes | Handler/class name in source project (e.g. `"BlockHouse"`, `"DBWifi"`) |
+| `commit` | string | no | Git commit hash from source project. Omit for `manual-research`. |
+| `license` | string | yes | License of the source project (e.g. `"GPL-3.0"`, `"BSD-3-Clause"`, `"MIT"`) |
+| `note` | string | no | Context about derivation (e.g. "Simplified from 5-step flow") |
+
+Example (dual-source recipe):
+```json
+"sources": [
+    { "project": "CaptivePortalAutoLogin", "handler": "FritzBox", "commit": "7c597a3", "license": "GPL-3.0" },
+    { "project": "captive.d", "handler": "generic_avm", "license": "BSD-3-Clause", "note": "Overlapping AVM Fritz!Box pattern" }
+]
+```
 
 ### Match Object (optional, recommended)
 

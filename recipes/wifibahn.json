@@ -2,20 +2,29 @@
   "id": "wifibahn",
   "name": "DB Wifi/ICE Hotspots (DE)",
   "travelmate_domain": "wifi.bahn.de",
-  "fallback_domains": [
-    "login.wifionice.de"
-  ],
+  "fallback_domains": ["login.wifionice.de"],
   "auth_type": "csrf-form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "DBWifi",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    },
+    {
+      "project": "captive.d",
+      "handler": "WIFIonICE",
+      "commit": "unknown",
+      "license": "BSD-3-Clause",
+      "note": "Deutsche Bahn ICE WiFi (Python)"
+    }
+  ],
   "match": {
-    "ssids": [
-      "WIFIonICE",
-      "dbs4public"
-    ],
-    "domains": [
-      "login.wifionice.de",
-      "wifi.bahn.de"
-    ],
+    "ssids": ["WIFIonICE", "dbs4public"],
+    "domains": ["login.wifionice.de", "wifi.bahn.de"],
     "paths": [],
     "body_contains": [],
     "priority": 80

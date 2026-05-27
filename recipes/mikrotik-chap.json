@@ -5,17 +5,21 @@
   "fallback_domains": [],
   "auth_type": "chap-md5",
   "credentials": "username_password",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "manual-research",
+      "handler": "generic",
+      "license": "MIT",
+      "note": "Generic MikroTik CHAP-MD5 pattern"
+    }
+  ],
   "match": {
     "ssids": [],
-    "domains": [
-      "hotspot.local"
-    ],
-    "paths": [
-      "/login"
-    ],
-    "body_contains": [
-      "hexMD5"
-    ],
+    "domains": ["hotspot.local"],
+    "paths": ["/login"],
+    "body_contains": ["hexMD5"],
     "priority": 50
   },
   "params": {

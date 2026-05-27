@@ -2,18 +2,23 @@
   "id": "mist-portal",
   "name": "Juniper Mist Portal (Rossmann)",
   "travelmate_domain": "portal.gc1.mist.com",
-  "fallback_domains": [
-    "portal.mist.com"
-  ],
+  "fallback_domains": ["portal.mist.com"],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "Juniper",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0",
+      "note": "Mist.com portal handler in JuniperNetworks.kt"
+    }
+  ],
   "match": {
-    "ssids": [
-      "Rossmann Kunden-WLAN"
-    ],
-    "domains": [
-      "portal.*.mist.com"
-    ],
+    "ssids": ["Rossmann Kunden-WLAN"],
+    "domains": ["portal.*.mist.com"],
     "paths": [],
     "body_contains": [],
     "priority": 70

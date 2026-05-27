@@ -200,13 +200,59 @@ for recipe in "${RECIPES_DIR}"/*.json; do
 	_auth="$(json_get "${recipe}" "auth_type" 2>/dev/null || true)"
 	_domain="$(json_get "${recipe}" "travelmate_domain" 2>/dev/null || true)"
 	_creds="$(json_get "${recipe}" "credentials" 2>/dev/null || true)"
+	_ver="$(json_get "${recipe}" "version" 2>/dev/null || echo "—")"
 	[ -z "${_id}" ] && continue
 	_rel="$(get_reliability "${_id}")"
+	# Extract source projects (comma-separated for display)
+	_src_raw="$(awk -v k='"project"' '
+		{ gsub(/[[:space:]]+/, " "); line = line " " $0 }
+		BEGIN { count=0 }
+		{
+			rest = $0
+			while (index(rest, k) > 0) {
+				pos = index(rest, k)
+				rest = substr(rest, pos + length(k))
+				sub(/^[[:space:]]*:[[:space:]]*/, "", rest)
+				if (substr(rest,1,1) == "\"") {
+					rest = substr(rest,2); val = ""; i = 1
+					while (i <= length(rest)) {
+						c = substr(rest, i, 1)
+						if (c == "\\" && substr(rest, i+1, 1) == "\"") { val = val "\""; i = i + 2 }
+						else if (c == "\"") { break }
+						else { val = val c; i = i + 1 }
+					}
+					if (val != "") {
+						if (count > 0) printf ","
+						printf "%s", val
+						count++
+					}
+				}
+			}
+		}
+	' "${recipe}" 2>/dev/null || true)"
+	_src_display=""
+	if [ -n "${_src_raw}" ]; then
+		for s in $(printf '%s' "${_src_raw}" | tr ',' ' '); do
+			case "${s}" in
+				CaptivePortalAutoLogin) _short="CPAL" ;;
+				captive.d) _short="captive.d" ;;
+				manual-research) _short="manual" ;;
+				*) _short="${s}" ;;
+			esac
+			if [ -n "${_src_display}" ]; then
+				_src_display="${_src_display}, ${_short}"
+			else
+				_src_display="${_short}"
+			fi
+		done
+	fi
+	[ -z "${_src_display}" ] && _src_display="—"
 	# Escape pipe chars in fields
 	_esc_name="$(printf '%s' "${_name}" | tr '|' ' ')"
 	_esc_domain="$(printf '%s' "${_domain}" | tr '|' ' ')"
 	_esc_creds="$(printf '%s' "${_creds}" | tr '|' ' ')"
-	RECIPES_DATA="${RECIPES_DATA}${_id}|${_esc_name}|${_auth}|${_esc_domain}|${_esc_creds}|${_rel}
+	_esc_src="$(printf '%s' "${_src_display}" | tr '|' ' ')"
+	RECIPES_DATA="${RECIPES_DATA}${_id}|${_esc_name}|${_auth}|${_esc_domain}|${_esc_creds}|${_rel}|${_ver}|${_esc_src}
 "
 	# Collect unique auth types
 	if ! printf '%s\n' "${AUTH_TYPES}" | grep -qxF "${_auth}" 2>/dev/null; then
@@ -227,11 +273,10 @@ HTML_FILE="${OUTPUT_DIR}/index.html"
 # Build table rows
 TABLE_ROWS=""
 _row_num=0
-printf '%s\n' "${RECIPES_DATA}" | while IFS='|' read -r _id _name _auth _domain _creds _rel; do
+printf '%s\n' "${RECIPES_DATA}" | while IFS='|' read -r _id _name _auth _domain _creds _rel _ver _src; do
 	[ -z "${_id}" ] && continue
 	_row_num=$((_row_num + 1))
 
-	# Reliability badge
 	case "${_rel}" in
 		HIGH)    _badge='<span class="badge badge-high">HIGH</span>' ;;
 		MEDIUM)  _badge='<span class="badge badge-medium">MEDIUM</span>' ;;
@@ -239,7 +284,6 @@ printf '%s\n' "${RECIPES_DATA}" | while IFS='|' read -r _id _name _auth _domain 
 		*)       _badge='<span class="badge badge-untested">UNTESTED</span>' ;;
 	esac
 
-	# Credentials display
 	case "${_creds}" in
 		none)           _cred_display='<span class="cred-none">none</span>' ;;
 		username_password|userpass) _cred_display='user + pass' ;;
@@ -251,16 +295,17 @@ printf '%s\n' "${RECIPES_DATA}" | while IFS='|' read -r _id _name _auth _domain 
 	_esc_name_html="$(html_escape "${_name}")"
 	_esc_auth_html="$(html_escape "${_auth}")"
 	_esc_domain_html="$(html_escape "${_domain}")"
+	_esc_ver_html="$(html_escape "${_ver}")"
+	_esc_src_html="$(html_escape "${_src}")"
 
-	# Odd/even row class
 	_cls="row-even"
 	_mod=$((_row_num % 2))
 	if [ "${_mod}" = "1" ]; then _cls="row-odd"; fi
 
 	_js_arg="togglePreview(event,&quot;${_id}&quot;)"
-	printf '      <tr class="%s"><td><a href="%s/%s.login" class="recipe-link" download>%s</a></td><td><code>%s</code></td><td><code class="domain">%s</code></td><td>%s</td><td>%s</td><td><a href="%s/%s.login" class="action-link" download>download</a>&#160;<a href="#" class="action-link preview-toggle" onclick="%s">preview</a></td></tr>\n' \
-		"${_cls}" "${_LINK_PREFIX}" "${_id}" "${_esc_name_html}" "${_esc_auth_html}" "${_esc_domain_html}" "${_cred_display}" "${_badge}" "${_LINK_PREFIX}" "${_id}" "${_js_arg}"
-	printf '      <tr class="preview-row" id="preview-%s"><td colspan="6"><button class="preview-close" onclick="closePreview(&quot;%s&quot;)">close</button><pre><code></code></pre></td></tr>\n' "${_id}" "${_id}"
+	printf '      <tr class="%s"><td><a href="%s/%s.login" class="recipe-link" download>%s</a></td><td><code>%s</code></td><td><code class="domain">%s</code></td><td>%s</td><td>%s</td><td class="cell-version">%s</td><td class="cell-source">%s</td><td><a href="%s/%s.login" class="action-link" download>download</a>&#160;<a href="#" class="action-link preview-toggle" onclick="%s">preview</a></td></tr>\n' \
+		"${_cls}" "${_LINK_PREFIX}" "${_id}" "${_esc_name_html}" "${_esc_auth_html}" "${_esc_domain_html}" "${_cred_display}" "${_badge}" "${_esc_ver_html}" "${_esc_src_html}" "${_LINK_PREFIX}" "${_id}" "${_js_arg}"
+	printf '      <tr class="preview-row" id="preview-%s"><td colspan="9"><button class="preview-close" onclick="closePreview(&quot;%s&quot;)">close</button><pre><code></code></pre></td></tr>\n' "${_id}" "${_id}"
 done > "${PROJECT_DIR}/.pages-table-rows.$$"
 
 # Generate the full HTML page
@@ -329,6 +374,8 @@ code{font-family:var(--mono);font-size:.8rem;background:rgba(110,118,129,.15);pa
 .badge-untested{background:rgba(139,148,158,.1);color:var(--text-muted);border:1px solid rgba(139,148,158,.2)}
 
 .cred-none{color:var(--text-muted);font-size:.8rem}
+.cell-version{font-size:.75rem;color:var(--text-muted);white-space:nowrap}
+.cell-source{font-size:.75rem;color:var(--text-muted)}
 
 .action-link{display:inline-block;font-size:.7rem;padding:.3em .6em;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);white-space:nowrap;transition:background .15s,color .15s,border-color .15s;cursor:pointer;text-align:center;line-height:1.4}
 .action-link:hover{color:var(--accent-hover);text-decoration:none;background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3)}
@@ -383,7 +430,7 @@ cat >> "${HTML_FILE}" << 'HTMLEOF2'
 <div class="table-wrap">
 <table>
 <thead>
-<tr><th>Name</th><th>Auth Type</th><th>Target Domain</th><th>Credentials</th><th>Reliability</th><th>Actions</th></tr>
+<tr><th>Name</th><th>Auth Type</th><th>Target Domain</th><th>Credentials</th><th>Reliability</th><th>Ver</th><th>Source</th><th>Actions</th></tr>
 </thead>
 <tbody>
 HTMLEOF2

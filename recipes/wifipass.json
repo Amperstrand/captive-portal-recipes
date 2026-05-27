@@ -5,6 +5,16 @@
   "fallback_domains": [],
   "auth_type": "cookie-chain",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "manual-research",
+      "handler": "generic",
+      "license": "MIT",
+      "note": "Speculative cookie-chain template for wifipass.org"
+    }
+  ],
   "match": {
     "ssids": [],
     "domains": [],

@@ -1,17 +1,24 @@
 {
   "id": "segmueller-hotspot",
-  "name": "Segmüller Hotspot (Aruba)",
+  "name": "Segm\u00fcller Hotspot (Aruba)",
   "travelmate_domain": "hotspot.segmueller.de",
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "ArubaLP",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0",
+      "note": "Segmueller-specific Aruba LP portal"
+    }
+  ],
   "match": {
-    "ssids": [
-      "Segmueller-Hotspot"
-    ],
-    "domains": [
-      "hotspot.segmueller.de"
-    ],
+    "ssids": ["Segmueller-Hotspot"],
+    "domains": ["hotspot.segmueller.de"],
     "paths": [],
     "body_contains": [],
     "priority": 80

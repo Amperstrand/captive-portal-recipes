@@ -5,15 +5,20 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "manual-research",
+      "handler": "FortiAuthenticator",
+      "license": "MIT",
+      "note": "Well-known Fortinet /fgtauth pattern"
+    }
+  ],
   "match": {
-    "ssids": [
-      "ITS - FREEWIFI",
-      "Douglas Guest"
-    ],
+    "ssids": ["ITS - FREEWIFI", "Douglas Guest"],
     "domains": [],
-    "paths": [
-      "/fgtauth"
-    ],
+    "paths": ["/fgtauth"],
     "body_contains": [],
     "priority": 70
   },

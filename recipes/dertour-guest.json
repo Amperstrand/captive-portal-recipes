@@ -5,14 +5,20 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "DerTour",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    }
+  ],
   "match": {
-    "ssids": [
-      "DERTOUR"
-    ],
+    "ssids": ["DERTOUR"],
     "domains": [],
-    "paths": [
-      "/authen"
-    ],
+    "paths": ["/authen"],
     "body_contains": [],
     "priority": 80
   },

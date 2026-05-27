@@ -5,16 +5,19 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "TheCloud",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    }
+  ],
   "match": {
-    "ssids": [
-      "HUGO-BOSS-WIFI",
-      "WiFi Darmstadt",
-      "mycloud",
-      "o2 free Wifi"
-    ],
-    "domains": [
-      "service.thecloud.eu"
-    ],
+    "ssids": ["HUGO-BOSS-WIFI", "WiFi Darmstadt", "mycloud", "o2 free Wifi"],
+    "domains": ["service.thecloud.eu"],
     "paths": [],
     "body_contains": [],
     "priority": 70

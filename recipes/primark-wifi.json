@@ -2,18 +2,23 @@
   "id": "primark-wifi",
   "name": "Primark Public WiFi",
   "travelmate_domain": "portal.wifi.primark.net",
-  "fallback_domains": [
-    "www.primark.com"
-  ],
+  "fallback_domains": ["www.primark.com"],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "ArubaLP",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0",
+      "note": "Primark-specific Aruba LP portal"
+    }
+  ],
   "match": {
-    "ssids": [
-      "PRIMARK_PUBLIC"
-    ],
-    "domains": [
-      "www.primark.com"
-    ],
+    "ssids": ["PRIMARK_PUBLIC"],
+    "domains": ["www.primark.com"],
     "paths": [],
     "body_contains": [],
     "priority": 80

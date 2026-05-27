@@ -2,28 +2,23 @@
   "id": "hotsplots",
   "name": "Hotsplots WiFi (DE Transit/Bogestra)",
   "travelmate_domain": "www.hotsplots.de",
-  "fallback_domains": [
-    "auth.hotsplots.de"
-  ],
+  "fallback_domains": ["auth.hotsplots.de"],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "Hotsplots",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    }
+  ],
   "match": {
-    "ssids": [
-      "Bogestra",
-      "KampsHotspot",
-      "WIFI@DB",
-      "WLAN@MainzerMobilität",
-      "WLAN@RMV S-BAHN",
-      "RRX Hotspot"
-    ],
-    "domains": [
-      "www.hotsplots.de",
-      "auth.hotsplots.de"
-    ],
-    "paths": [
-      "/auth/login.php",
-      "/login"
-    ],
+    "ssids": ["Bogestra", "KampsHotspot", "WIFI@DB", "WLAN@MainzerMobilit\u00e4t", "WLAN@RMV S-BAHN", "RRX Hotspot"],
+    "domains": ["www.hotsplots.de", "auth.hotsplots.de"],
+    "paths": ["/auth/login.php", "/login"],
     "body_contains": [],
     "priority": 70
   },

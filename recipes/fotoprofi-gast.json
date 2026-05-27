@@ -5,6 +5,16 @@
   "fallback_domains": [],
   "auth_type": "multipart-post",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "FotoProfi",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    }
+  ],
   "match": {
     "ssids": ["Fotoprofi-Gast"],
     "domains": [],

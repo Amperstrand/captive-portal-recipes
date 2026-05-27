@@ -5,23 +5,21 @@
   "fallback_domains": [],
   "auth_type": "multi-step-form",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "manual-research",
+      "handler": "m3connect",
+      "license": "MIT",
+      "note": "Speculative Accor hotel multi-step portal"
+    }
+  ],
   "match": {
-    "ssids": [
-      "ibisbudget",
-      "movenpick",
-      "BBHOTELSGuest",
-      "-REWE gratis WLAN-",
-      "-Kaufland FreeWiFi-"
-    ],
-    "domains": [
-      "*.conn4.com"
-    ],
-    "paths": [
-      "/ident"
-    ],
-    "body_contains": [
-      "accor/i-accor/html-page-scene-wbs"
-    ],
+    "ssids": ["ibisbudget", "movenpick", "BBHOTELSGuest", "-REWE gratis WLAN-", "-Kaufland FreeWiFi-"],
+    "domains": ["*.conn4.com"],
+    "paths": ["/ident"],
+    "body_contains": ["accor/i-accor/html-page-scene-wbs"],
     "priority": 60
   },
   "params": {

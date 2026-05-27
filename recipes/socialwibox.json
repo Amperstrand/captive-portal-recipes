@@ -5,6 +5,17 @@
   "fallback_domains": [],
   "auth_type": "multi-step-form",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "SocialwiBox",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0",
+      "note": "Simplified multi-step-form variant"
+    }
+  ],
   "match": {
     "ssids": [],
     "domains": ["hotspot.socialwibox.com"],

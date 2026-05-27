@@ -59,22 +59,41 @@ jobs:
 
       # ── Compile & check (travelmate target) ────────────────────
 
-      - name: Compile all recipes for travelmate
+      - name: Restore recipe hash cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/recipe-hashes
+          key: recipe-hashes-${{ github.sha }}
+          restore-keys: |
+            recipe-hashes-
+
+      - name: Compile changed recipes for travelmate
         run: |
           COMPILE_DIR="/tmp/recipe-compile-test"
-          mkdir -p "${COMPILE_DIR}"
+          HASH_DIR="/tmp/recipe-hashes"
+          mkdir -p "${COMPILE_DIR}" "${HASH_DIR}"
           compiled=0
+          cached=0
           failed=0
           for f in recipes/*.json; do
             name="$(basename "$f" .json)"
+            current_hash="$(md5sum "$f" | cut -d' ' -f1)"
+            cache_file="${HASH_DIR}/${name}.md5"
+            # Check if recipe changed since last compile
+            if [ -f "${cache_file}" ] && [ "$(cat "${cache_file}")" = "${current_hash}" ] && [ -f "${COMPILE_DIR}/${name}.login" ]; then
+              cached=$((cached + 1))
+              continue
+            fi
+            # Recipe changed or new — compile it
             if sh compiler/compile-recipe.sh "$f" -o "${COMPILE_DIR}/${name}.login" --target travelmate 2>&1; then
               compiled=$((compiled + 1))
+              echo "${current_hash}" > "${cache_file}"
             else
               echo "::error file=$f::Compilation failed for $name (travelmate)"
               failed=$((failed + 1))
             fi
           done
-          echo "Compiled ${compiled} recipes for travelmate (${failed} failures)"
+          echo "Travelmate: ${compiled} compiled, ${cached} cached, ${failed} failures"
           [ "${failed}" = 0 ] || exit 1
 
       - name: Check all compiled .login scripts pass sh -n
@@ -92,23 +111,31 @@ jobs:
 
       # ── Compile & check (standalone target) ─────────────────────
 
-      - name: Compile all recipes for standalone
+      - name: Compile changed recipes for standalone
         run: |
           STANDALONE_DIR="/tmp/recipe-compile-standalone"
-          mkdir -p "${STANDALONE_DIR}"
+          HASH_DIR="/tmp/recipe-hashes"
+          mkdir -p "${STANDALONE_DIR}" "${HASH_DIR}"
           compiled=0
+          cached=0
           failed=0
           for f in recipes/*.json; do
             name="$(basename "$f" .json)"
+            current_hash="$(md5sum "$f" | cut -d' ' -f1)"
+            cache_file="${HASH_DIR}/${name}-standalone.md5"
+            if [ -f "${cache_file}" ] && [ "$(cat "${cache_file}")" = "${current_hash}" ] && [ -f "${STANDALONE_DIR}/${name}.sh" ]; then
+              cached=$((cached + 1))
+              continue
+            fi
             if sh compiler/compile-recipe.sh "$f" -o "${STANDALONE_DIR}/${name}.sh" --target standalone 2>&1; then
               compiled=$((compiled + 1))
+              echo "${current_hash}" > "${cache_file}"
             else
               echo "::warning file=$f::Compilation failed for $name (standalone)"
               failed=$((failed + 1))
             fi
           done
-          echo "Compiled ${compiled} recipes for standalone (${failed} failures)"
-          # Standalone failures are warnings, not hard errors (some auth_types may have stubs)
+          echo "Standalone: ${compiled} compiled, ${cached} cached, ${failed} failures"
 
       - name: Check standalone scripts pass sh -n
         run: |

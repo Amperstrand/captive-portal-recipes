@@ -5,6 +5,16 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "username_password",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "manual-research",
+      "handler": "generic",
+      "license": "MIT",
+      "note": "Generic HTML form template"
+    }
+  ],
   "match": {
     "ssids": [],
     "domains": [],

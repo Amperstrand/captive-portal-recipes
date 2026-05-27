@@ -5,14 +5,27 @@
   "fallback_domains": [],
   "auth_type": "form-submit",
   "credentials": "none",
+  "version": "1.0.0",
+  "schema_version": 2,
+  "sources": [
+    {
+      "project": "CaptivePortalAutoLogin",
+      "handler": "FritzBox",
+      "commit": "7c597a3a3a87c1c9db308684ac12ea783ed3b5e7",
+      "license": "GPL-3.0"
+    },
+    {
+      "project": "captive.d",
+      "handler": "generic_avm",
+      "commit": "unknown",
+      "license": "BSD-3-Clause",
+      "note": "Overlapping AVM Fritz!Box guest portal pattern"
+    }
+  ],
   "match": {
     "ssids": [],
-    "domains": [
-      "fritz.box"
-    ],
-    "paths": [
-      "/untrusted_guest.lua"
-    ],
+    "domains": ["fritz.box"],
+    "paths": ["/untrusted_guest.lua"],
     "body_contains": [],
     "priority": 70
   },
