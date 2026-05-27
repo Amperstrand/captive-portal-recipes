@@ -30,11 +30,15 @@ jobs:
       - name: Check all templates pass sh -n syntax check
         run: |
           fail=0
-          for f in templates/targets/travelmate/*.sh.template; do
-            if ! sh -n "$f" 2>&1; then
-              echo "::error file=$f::Template failed sh -n syntax check"
-              fail=1
-            fi
+          for target_dir in templates/targets/*/; do
+            target_name="$(basename "${target_dir}")"
+            for f in "${target_dir}"*.sh.template; do
+              [ -f "$f" ] || continue
+              if ! sh -n "$f" 2>&1; then
+                echo "::error file=$f::Template failed sh -n syntax check (${target_name})"
+                fail=1
+              fi
+            done
           done
           [ "$fail" = 0 ] && echo "All templates pass sh -n" || exit 1
 
@@ -53,9 +57,9 @@ jobs:
           done
           echo "Validated ${count} recipe files"
 
-      # ── Compile & check ────────────────────────────────────────
+      # ── Compile & check (travelmate target) ────────────────────
 
-      - name: Compile all recipes
+      - name: Compile all recipes for travelmate
         run: |
           COMPILE_DIR="/tmp/recipe-compile-test"
           mkdir -p "${COMPILE_DIR}"
@@ -63,14 +67,14 @@ jobs:
           failed=0
           for f in recipes/*.json; do
             name="$(basename "$f" .json)"
-             if sh compiler/compile-recipe.sh "$f" -o "${COMPILE_DIR}/${name}.login" 2>&1; then
+            if sh compiler/compile-recipe.sh "$f" -o "${COMPILE_DIR}/${name}.login" --target travelmate 2>&1; then
               compiled=$((compiled + 1))
             else
-              echo "::error file=$f::Compilation failed for $name"
+              echo "::error file=$f::Compilation failed for $name (travelmate)"
               failed=$((failed + 1))
             fi
           done
-          echo "Compiled ${compiled} recipes (${failed} failures)"
+          echo "Compiled ${compiled} recipes for travelmate (${failed} failures)"
           [ "${failed}" = 0 ] || exit 1
 
       - name: Check all compiled .login scripts pass sh -n
@@ -83,7 +87,40 @@ jobs:
             fi
           done
           total=$(ls /tmp/recipe-compile-test/*.login | wc -l)
-          echo "Syntax checked ${total} compiled scripts"
+          echo "Syntax checked ${total} compiled scripts (travelmate)"
+          [ "$fail" = 0 ] || exit 1
+
+      # ── Compile & check (standalone target) ─────────────────────
+
+      - name: Compile all recipes for standalone
+        run: |
+          STANDALONE_DIR="/tmp/recipe-compile-standalone"
+          mkdir -p "${STANDALONE_DIR}"
+          compiled=0
+          failed=0
+          for f in recipes/*.json; do
+            name="$(basename "$f" .json)"
+            if sh compiler/compile-recipe.sh "$f" -o "${STANDALONE_DIR}/${name}.sh" --target standalone 2>&1; then
+              compiled=$((compiled + 1))
+            else
+              echo "::warning file=$f::Compilation failed for $name (standalone)"
+              failed=$((failed + 1))
+            fi
+          done
+          echo "Compiled ${compiled} recipes for standalone (${failed} failures)"
+          # Standalone failures are warnings, not hard errors (some auth_types may have stubs)
+
+      - name: Check standalone scripts pass sh -n
+        run: |
+          fail=0
+          for f in /tmp/recipe-compile-standalone/*.sh; do
+            if ! sh -n "$f" 2>&1; then
+              echo "::error file=$f::Standalone script failed sh -n syntax check"
+              fail=1
+            fi
+          done
+          total=$(ls /tmp/recipe-compile-standalone/*.sh | wc -l)
+          echo "Syntax checked ${total} standalone scripts"
           [ "$fail" = 0 ] || exit 1
 
       # ── Mock test suite ────────────────────────────────────────
@@ -99,35 +136,48 @@ jobs:
         if: always()
         run: |
           recipes=$(ls recipes/*.json 2>/dev/null | wc -l | tr -d ' ')
-          compiled=$(ls /tmp/recipe-compile-test/*.login 2>/dev/null | wc -l | tr -d ' ')
-          templates=$(ls templates/targets/travelmate/*.sh.template 2>/dev/null | wc -l | tr -d ' ')
+          travelmate_compiled=$(ls /tmp/recipe-compile-test/*.login 2>/dev/null | wc -l | tr -d ' ')
+          standalone_compiled=$(ls /tmp/recipe-compile-standalone/*.sh 2>/dev/null | wc -l | tr -d ' ')
+          travelmate_templates=$(ls templates/targets/travelmate/*.sh.template 2>/dev/null | wc -l | tr -d ' ')
+          standalone_templates=$(ls templates/targets/standalone/*.sh.template 2>/dev/null | wc -l | tr -d ' ')
 
           {
             echo "## Recipe Compiler Test Results"
             echo ""
             echo "| Item | Count |"
             echo "|------|-------|"
-            echo "| Templates | ${templates} |"
             echo "| Recipe JSON files | ${recipes} |"
-            echo "| Compiled .login scripts | ${compiled} |"
+            echo "| Templates (travelmate) | ${travelmate_templates} |"
+            echo "| Templates (standalone) | ${standalone_templates} |"
+            echo "| Compiled .login scripts (travelmate) | ${travelmate_compiled} |"
+            echo "| Compiled .sh scripts (standalone) | ${standalone_compiled} |"
             echo ""
             echo "### Checks"
-            echo "- Template syntax (sh -n)"
-            echo "- Compiler syntax (sh -n)"
+            echo "- Template syntax sh -n (both targets)"
+            echo "- Compiler syntax sh -n"
             echo "- Recipe JSON validity"
-            echo "- Compilation of all recipes"
-            echo "- Compiled script syntax (sh -n)"
-            echo "- Mock test suite (all 44 recipes)"
+            echo "- Compilation of all recipes (travelmate)"
+            echo "- Compilation of all recipes (standalone)"
+            echo "- Compiled script syntax sh -n (both targets)"
+            echo "- Mock test suite (travelmate: all recipes)"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # ── Upload compiled scripts as artifact ────────────────────
+      # ── Upload compiled scripts as artifacts ───────────────────
 
-      - name: Upload compiled scripts
+      - name: Upload travelmate scripts
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: compiled-login-scripts
+          name: compiled-travelmate-scripts
           path: /tmp/recipe-compile-test/*.login
+          retention-days: 30
+
+      - name: Upload standalone scripts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-standalone-scripts
+          path: /tmp/recipe-compile-standalone/*.sh
           retention-days: 30
 
   pages:

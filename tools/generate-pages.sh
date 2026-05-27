@@ -375,7 +375,7 @@ HTMLEOF
 printf '<div class="stats">\n' >> "${HTML_FILE}"
 printf '  <div class="stat"><div class="stat-value">%d</div><div class="stat-label">Recipes</div></div>\n' "${RECIPE_COUNT}" >> "${HTML_FILE}"
 printf '  <div class="stat"><div class="stat-value">%d</div><div class="stat-label">Auth Types</div></div>\n' "${AUTH_TYPE_COUNT}" >> "${HTML_FILE}"
-printf '  <div class="stat"><div class="stat-value">1</div><div class="stat-label">Target (travelmate)</div></div>\n' >> "${HTML_FILE}"
+	printf '  <div class="stat"><div class="stat-value">2</div><div class="stat-label">Targets (travelmate, standalone)</div></div>\n' >> "${HTML_FILE}"
 printf '</div>\n' >> "${HTML_FILE}"
 
 # Insert table
