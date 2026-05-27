@@ -24,7 +24,7 @@
     "username_field": "",
     "password_field": "",
     "form_action_default": "/guest/s/default/login",
-    "success_check": "contains_string",
-    "success_string": "authorized"
+    "success_check_type": "contains_string",
+    "success_check_string": "authorized"
   }
 }

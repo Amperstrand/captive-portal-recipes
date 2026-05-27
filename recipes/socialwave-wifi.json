@@ -29,6 +29,6 @@
     "step4_url": "http://${trm_domain}/nodogsplash_auth_tok/?token=${auth_token}",
     "step4_name": "authenticate on router",
     "step4_type": "fetch",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

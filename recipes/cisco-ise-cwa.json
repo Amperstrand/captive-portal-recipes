@@ -23,6 +23,6 @@
     "username_field": "token",
     "password_field": "",
     "form_action_default": "/AupSubmit.action",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

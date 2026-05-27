@@ -17,7 +17,7 @@
     "priority": 80
   },
   "params": {
-    "success_check": "empty_body",
+    "success_check_type": "empty_body",
     "step1_name": "init session",
     "step1_url": "https://${trm_domain}/portal_api.php",
     "step1_method": "POST",

@@ -23,6 +23,6 @@
     "username_field": "user",
     "password_field": "password",
     "form_action_default": "/cgi-bin/login",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

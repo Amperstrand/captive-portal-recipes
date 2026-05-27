@@ -385,7 +385,7 @@ URLEOF
 }
 
 gen_success_check() {
-	_check="$(json_get_nested "params.success_check" 2>/dev/null || echo "empty_body")"
+	_check="$(json_get_nested "params.success_check_type" 2>/dev/null || json_get_nested "params.success_check" 2>/dev/null || echo "empty_body")"
 	case "${_check}" in
 		"empty_body")
 			echo '[ -z "${raw_html}" ] && exit 0 || exit 255' ;;
@@ -396,13 +396,13 @@ success="$(printf "%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '@
 SCEOF
 			;;
 		"contains_string")
-			_str="$(json_get_nested "params.success_string" 2>/dev/null || echo "success")"
+			_str="$(json_get_nested "params.success_check_string" 2>/dev/null || json_get_nested "params.success_string" 2>/dev/null || echo "success")"
 			printf 'printf "%%s" "${raw_html}" 2>/dev/null | grep -q "%s" && exit 0 || exit 255' "${_str}" ;;
 		"json_not_null")
-			_field="$(json_get_nested "params.success_field" 2>/dev/null || echo "session")"
+			_field="$(json_get_nested "params.success_check_field" 2>/dev/null || json_get_nested "params.success_field" 2>/dev/null || echo "session")"
 			printf 'result="$(printf "%%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '"'"'@.%s'"'"')"\n[ -n "${result}" ] && exit 0 || exit 255' "${_field}" ;;
 		"redirect_match")
-			_pattern="$(json_get_nested "params.success_pattern" 2>/dev/null || echo "")"
+			_pattern="$(json_get_nested "params.success_check_pattern" 2>/dev/null || json_get_nested "params.success_pattern" 2>/dev/null || echo "")"
 			printf 'printf "%%s" "${raw_html}" 2>/dev/null | grep -q "%s" && exit 0 || exit 255' "${_pattern}" ;;
 		*) echo '[ -z "${raw_html}" ] && exit 0 || exit 255' ;;
 	esac
@@ -667,7 +667,7 @@ FEEOF
 			# Generate loop success check and footer
 			if [ "${_fe_until}" = "true" ]; then
 				# Use gen_success_check logic inline for the check
-				_check="$(json_get_nested "params.success_check" 2>/dev/null || echo "empty_body")"
+				_check="$(json_get_nested "params.success_check_type" 2>/dev/null || json_get_nested "params.success_check" 2>/dev/null || echo "empty_body")"
 				case "${_check}" in
 					json_true)
 						cat << 'CHECKEOF' >> "${_tmpfile}"
@@ -679,11 +679,11 @@ CHECKEOF
 						echo '	[ -z "${raw_html}" ] && exit 0' >> "${_tmpfile}"
 						;;
 					contains_string)
-						_str="$(json_get_nested "params.success_string" 2>/dev/null || echo "success")"
+						_str="$(json_get_nested "params.success_check_string" 2>/dev/null || json_get_nested "params.success_string" 2>/dev/null || echo "success")"
 						printf '\tprintf "%%s" "${raw_html}" 2>/dev/null | grep -q "%s" && exit 0\n' "${_str}" >> "${_tmpfile}"
 						;;
 					json_not_null)
-						_field="$(json_get_nested "params.success_field" 2>/dev/null || echo "session")"
+						_field="$(json_get_nested "params.success_check_field" 2>/dev/null || json_get_nested "params.success_field" 2>/dev/null || echo "session")"
 						printf '\t_result="$(printf "%%s" "${raw_html}" 2>/dev/null | "${trm_jsoncmd}" -q -l1 -e '"'"'@.%s'"'"')"\n' "${_field}" >> "${_tmpfile}"
 						echo '	[ -n "${_result}" ] && exit 0' >> "${_tmpfile}"
 						;;

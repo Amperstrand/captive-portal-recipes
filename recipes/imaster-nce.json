@@ -17,7 +17,7 @@
     "priority": 80
   },
   "params": {
-    "success_check": "json_true",
+    "success_check_type": "json_true",
     "step1_name": "anonymous login form POST",
     "step1_type": "form",
     "step1_url": "https://${trm_domain}:19008/portalauth/login",

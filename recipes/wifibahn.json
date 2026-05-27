@@ -27,6 +27,6 @@
     "csrf_field_name": "CSRFToken",
     "csrf_submit_url": "https://${trm_domain}/en/",
     "extra_fields": "login=true",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

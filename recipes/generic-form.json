@@ -20,6 +20,6 @@
     "form_action_default": "/",
     "extra_fields": "",
     "url_encode_creds": "false",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

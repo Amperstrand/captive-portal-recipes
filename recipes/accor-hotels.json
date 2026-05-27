@@ -25,8 +25,8 @@
     "priority": 60
   },
   "params": {
-    "success_check": "contains_string",
-    "success_string": "online",
+    "success_check_type": "contains_string",
+    "success_check_string": "online",
     "step1_url": "${trm_captiveurl}",
     "step1_name": "fetch landing page",
     "step1_extra_fields": "",

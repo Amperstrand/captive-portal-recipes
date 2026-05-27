@@ -33,6 +33,6 @@
     "continue_url": "http://google.com/",
     "duration": 86400,
     "grant_method": "GET",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

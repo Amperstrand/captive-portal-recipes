@@ -24,7 +24,7 @@
     "password_field": "password",
     "form_action_default": "/fgtauth",
     "extra_fields": "answer=1&agree=1",
-    "success_check": "contains_string",
-    "success_string": "keepalive"
+    "success_check_type": "contains_string",
+    "success_check_string": "keepalive"
   }
 }

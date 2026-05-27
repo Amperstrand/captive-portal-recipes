@@ -19,7 +19,7 @@
     "priority": 80
   },
   "params": {
-    "success_check": "json_true",
+    "success_check_type": "json_true",
     "step1_name": "get redirect and extract sid",
     "step1_type": "redirect",
     "step1_url": "${trm_captiveurl}",

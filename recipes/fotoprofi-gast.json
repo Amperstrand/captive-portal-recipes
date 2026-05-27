@@ -22,7 +22,7 @@
     "field2_name": "username",
     "field2_value": "guest",
     "field2_source": "static",
-    "success_check": "contains_string",
-    "success_string": "success"
+    "success_check_type": "contains_string",
+    "success_check_string": "success"
   }
 }

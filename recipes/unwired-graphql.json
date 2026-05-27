@@ -23,7 +23,7 @@
     "priority": 70
   },
   "params": {
-    "success_check": "empty_body",
+    "success_check_type": "empty_body",
     "step1_name": "GraphQL splashpage query",
     "step1_type": "json",
     "step1_url": "https://${trm_domain}/api/graphql",

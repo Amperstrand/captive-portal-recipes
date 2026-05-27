@@ -21,7 +21,7 @@
     "username_field": "",
     "password_field": "",
     "form_action_default": "/landingpage/",
-    "success_check": "contains_string",
-    "success_string": "success"
+    "success_check_type": "contains_string",
+    "success_check_string": "success"
   }
 }

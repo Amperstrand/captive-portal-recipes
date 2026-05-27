@@ -24,7 +24,7 @@
     "username_field": "",
     "password_field": "",
     "form_action_default": "/Login",
-    "success_check": "contains_string",
-    "success_string": "Login erfolgreich."
+    "success_check_type": "contains_string",
+    "success_check_string": "Login erfolgreich."
   }
 }

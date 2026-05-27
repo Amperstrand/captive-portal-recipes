@@ -27,6 +27,6 @@
     "submit_method": "GET",
     "submit_data": "",
     "submit_content_type": "application/x-www-form-urlencoded",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

@@ -24,6 +24,6 @@
     "username_field": "",
     "password_field": "",
     "form_action_default": "/fs/customwebauth/login.html",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

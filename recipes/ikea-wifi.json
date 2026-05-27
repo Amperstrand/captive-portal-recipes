@@ -25,6 +25,6 @@
     "step3_name": "authenticate with credentials",
     "step3_type": "fetch",
     "step3_method": "GET",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

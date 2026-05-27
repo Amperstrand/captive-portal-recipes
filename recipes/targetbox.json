@@ -17,7 +17,7 @@
     "priority": 80
   },
   "params": {
-    "success_check": "json_true",
+    "success_check_type": "json_true",
     "step1_name": "skip/auth via wifidog",
     "step1_type": "json",
     "step1_url": "https://${trm_domain}/wifidog/skip",

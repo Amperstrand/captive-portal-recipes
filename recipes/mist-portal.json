@@ -25,7 +25,7 @@
     "username_field": "ap_mac",
     "password_field": "client_mac",
     "form_action_default": "/logon",
-    "success_check": "contains_string",
-    "success_string": "success"
+    "success_check_type": "contains_string",
+    "success_check_string": "success"
   }
 }

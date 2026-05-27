@@ -26,6 +26,6 @@
     "username_field": "",
     "password_field": "",
     "form_action_default": "/macauthlogin/v2/registration",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

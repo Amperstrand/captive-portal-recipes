@@ -13,7 +13,7 @@
     "priority": 70
   },
   "params": {
-    "success_check": "json_true",
+    "success_check_type": "json_true",
     "step1_url": "${trm_captiveurl}",
     "step1_name": "fetch portal page",
     "step1_type": "fetch",

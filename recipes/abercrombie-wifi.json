@@ -19,7 +19,7 @@
     "jwt_query_param": "jwt",
     "request_url": "https://storewifi.abercrombie.com/authorize?jwt=${jwt_token}",
     "request_method": "GET",
-    "success_check": "redirect_match",
-    "success_pattern": "success"
+    "success_check_type": "redirect_match",
+    "success_check_pattern": "success"
   }
 }

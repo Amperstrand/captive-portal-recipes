@@ -21,6 +21,6 @@
     "submit_method": "POST",
     "submit_data": "url=${trm_captiveurl}&checkbox=checkbox",
     "submit_content_type": "application/x-www-form-urlencoded",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

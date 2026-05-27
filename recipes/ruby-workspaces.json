@@ -25,6 +25,6 @@
     "response_field": "password",
     "dst_field": "dst",
     "dst_default": "",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }

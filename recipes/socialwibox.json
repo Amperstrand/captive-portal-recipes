@@ -19,6 +19,6 @@
     "step2_url": "http://${trm_domain}/terms",
     "step2_name": "follow terms link and submit",
     "step2_extra_fields": "",
-    "success_check": "empty_body"
+    "success_check_type": "empty_body"
   }
 }
